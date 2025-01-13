@@ -1,259 +1,107 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { apiClient } from "@/lib/api-client";
+import { Leave } from "@/types/leave";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Timeline } from "@/components/ui/timeline";
-import {
-  ArrowLeft,
-  Loader2,
-  Download,
-  CheckCircle,
-  XCircle,
-  CheckCircle2,
-  Clock,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Download, CheckCircle, XCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
 import { toast } from "sonner";
-import { useLeave } from "@/lib/hooks/use-leave";
 import { useState } from "react";
 import { ApproveLeaveDialog } from "@/components/dashboard/leaves/approve-leave-dialog";
 import { DisapproveLeaveDialog } from "@/components/dashboard/leaves/disapprove-leave-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
 
-export default function LeaveDetailPage() {
-  const { id } = useParams();
+export default function LeavePage() {
+  const { data: session } = useSession();
+  const params = useParams();
   const router = useRouter();
-  const { leave, isLoading: isLeaveLoading, error } = useLeave(id as string);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isDisapproveDialogOpen, setIsDisapproveDialogOpen] = useState(false);
-  const { data: session } = useSession();
 
-  if (isLeaveLoading) return <LeaveDetailSkeleton />;
-
-  if (error) {
-    toast.error("Failed to load leave details");
-    router.push("/dashboard/leaves");
-    return null;
-  }
-
-  if (!leave) return <div>Leave not found</div>;
-  // console.log("leave", leave);
-
-  const isSupervisor = session?.user?._id === leave?.supervisorId._id;
-  const isAdmin = session?.user?.roles.some((role) =>
-    ["sysAdmin", "administrator"].includes(role)
-  );
-  const canApprove = (isSupervisor || isAdmin) && leave.status === "pending";
-  console.log({
-    userRoles: session?.user?.roles,
-    userId: session?.user?._id,
-    supervisorId: leave?.supervisorId._id,
-    isSupervisor,
-    isAdmin,
-    canApprove,
-    leaveStatus: leave.status,
+  const { data: leave, isLoading } = useQuery<Leave>({
+    queryKey: ["leave", params.id],
+    queryFn: () => apiClient(`/leaves/${params.id}`, session),
+    enabled: !!session && !!params.id,
   });
 
-  const getTimelineItems = () => [
-    {
-      title: "Leave Request Submitted",
-      description: `By ${leave.employeeId.firstName} ${leave.employeeId.lastName}`,
-      status: "complete" as const,
-      date: format(new Date(leave.createdAt), "PPP p"),
-      icon: <CheckCircle2 className="h-4 w-4 text-primary" />,
-    },
-    {
-      title: "Supervisor Approval",
-      description:
-        leave.approvalFlow.supervisorApproval.status === "pending"
-          ? "Awaiting supervisor approval"
-          : `${
-              leave.approvalFlow.supervisorApproval.status === "approved"
-                ? "Approved"
-                : "Rejected"
-            } by ${leave.supervisorId.firstName} ${
-              leave.supervisorId.lastName
-            }`,
-      status:
-        leave.approvalFlow.supervisorApproval.status === "pending"
-          ? "current"
-          : ("complete" as const),
-      date: leave.approvalFlow.supervisorApproval.signatureDate
-        ? format(
-            new Date(leave.approvalFlow.supervisorApproval.signatureDate),
-            "PPP p"
-          )
-        : undefined,
-      icon:
-        leave.approvalFlow.supervisorApproval.status === "pending" ? (
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        ) : leave.approvalFlow.supervisorApproval.status === "approved" ? (
-          <CheckCircle2 className="h-4 w-4 text-primary" />
-        ) : (
-          <XCircle className="h-4 w-4 text-destructive" />
-        ),
-    },
-    {
-      title: "Admin Approval",
-      description:
-        leave.approvalFlow.adminApproval?.status === "pending"
-          ? "Awaiting admin approval"
-          : `${
-              leave.approvalFlow.adminApproval?.status === "approved"
-                ? "Approved"
-                : "Rejected"
-            }${
-              leave.approvalFlow.adminApproval?.comments
-                ? ` - ${leave.approvalFlow.adminApproval?.comments}`
-                : ""
-            }`,
-      status:
-        leave.approvalFlow.supervisorApproval?.status !== "approved"
-          ? "upcoming"
-          : leave.approvalFlow.adminApproval?.status === "pending"
-          ? "current"
-          : ("complete" as const),
-      date: leave.approvalFlow.adminApproval?.signatureDate
-        ? format(
-            new Date(leave.approvalFlow.adminApproval?.signatureDate),
-            "PPP p"
-          )
-        : undefined,
-      icon:
-        leave.approvalFlow.adminApproval?.status === "pending" ? (
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        ) : leave.approvalFlow.adminApproval?.status === "approved" ? (
-          <CheckCircle2 className="h-4 w-4 text-primary" />
-        ) : leave.approvalFlow.adminApproval?.status === "rejected" ? (
-          <XCircle className="h-4 w-4 text-destructive" />
-        ) : null,
-    },
-  ];
+  if (isLoading || !leave) {
+    return <LeaveDetailSkeleton />;
+  }
 
-  const showActions =
-    leave?.status !== "rejected" &&
-    leave?.status !== "approved" &&
-    // Show for supervisors if pending
-    ((isSupervisor && leave?.status === "pending") ||
-      // Show for admins if supervisor approved
-      (isAdmin && leave?.status === "supervisor_approved"));
+  const isSupervisor = session?.user?._id === leave.supervisorId._id;
+  const isAdmin = session?.user?.roles?.some((role: string) =>
+    ["administrator", "sysAdmin", "admin"].includes(role.toLowerCase())
+  );
+
+  console.log("User roles:", session?.user?.roles);
+  console.log("Leave status:", leave.status);
+  console.log("Is Admin:", isAdmin);
+  console.log("Is Supervisor:", isSupervisor);
+
+  const canApprove =
+    (isAdmin || isSupervisor) &&
+    ((isAdmin && leave.approvalFlow.supervisorApproval.status === "approved") ||
+      (isSupervisor && leave.status === "pending"));
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="flex items-center"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <h2 className="text-3xl font-bold tracking-tight">Leave Details</h2>
         </div>
-        {showActions && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsDisapproveDialogOpen(true)}
-              className="flex items-center text-destructive"
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              Reject
-            </Button>
-            <Button
-              onClick={() => setIsApproveDialogOpen(true)}
-              className="flex items-center"
-            >
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Approve
-            </Button>
-          </div>
-        )}
+        <Badge>{leave.status}</Badge>
       </div>
 
       <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Leave Information</CardTitle>
+            <CardTitle>Employee Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-1">
-              <div className="text-sm font-medium">Employee</div>
-              <div className="text-sm">
-                {leave?.employeeId.firstName} {leave?.employeeId.lastName}
-              </div>
-
-              <div className="text-sm font-medium">Department</div>
-              <div className="text-sm">{leave?.employeeId.department}</div>
-
-              <div className="text-sm font-medium">Supervisor</div>
-              <div className="text-sm">
-                {leave?.supervisorId.firstName} {leave?.supervisorId.lastName}
-              </div>
-
-              <div className="text-sm font-medium">Type</div>
-              <div className="text-sm">{leave?.absenceType}</div>
-
-              <div className="text-sm font-medium">Duration</div>
-              <div className="text-sm">
-                {format(new Date(leave?.startDate!), "PPP")} -{" "}
-                {format(new Date(leave?.endDate!), "PPP")}
-              </div>
-
-              <div className="text-sm font-medium">Days Requested</div>
-              <div className="text-sm">{leave?.daysRequested} days</div>
-
-              <div className="text-sm font-medium">Status</div>
-              <div className="text-sm">
-                <Badge
-                  variant={
-                    leave?.status === "approved"
-                      ? "default"
-                      : leave?.status === "rejected"
-                      ? "destructive"
-                      : "secondary"
-                  }
-                >
-                  {leave?.status.replace("_", " ").toUpperCase()}
-                </Badge>
-              </div>
+            <div>
+              <p className="font-medium">Name</p>
+              <p className="text-sm text-muted-foreground">
+                {leave.employeeId.firstName} {leave.employeeId.lastName}
+              </p>
             </div>
-
-            <div className="pt-2">
-              <div className="text-sm font-medium">Reason</div>
-              <div className="text-sm text-muted-foreground mt-1">
-                {leave?.reason}
-              </div>
+            <div>
+              <p className="font-medium">Department</p>
+              <p className="text-sm text-muted-foreground">
+                {leave.employeeId.department}
+              </p>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Employee Signature</CardTitle>
+            <CardTitle>Leave Information</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="border rounded-lg p-4">
-              <Image
-                src={leave.employeeSignature}
-                alt="Employee Signature"
-                width={400}
-                height={200}
-                className="w-full object-contain"
-              />
+          <CardContent className="space-y-2">
+            <div>
+              <p className="font-medium">Type</p>
+              <p className="text-sm text-muted-foreground">{leave.type}</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
-              Signed on {format(new Date(leave.employeeSignatureDate), "PPP p")}
-            </p>
+            <div>
+              <p className="font-medium">Duration</p>
+              <p className="text-sm text-muted-foreground">
+                {format(new Date(leave.startDate), "PPP")} -{" "}
+                {format(new Date(leave.endDate), "PPP")}
+              </p>
+            </div>
+            <div>
+              <p className="font-medium">Reason</p>
+              <p className="text-sm text-muted-foreground">{leave.reason}</p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -263,9 +111,63 @@ export default function LeaveDetailPage() {
           <CardTitle>Approval Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <Timeline items={getTimelineItems() as any} />
+          <Timeline>
+            <TimelineItem
+              title="Supervisor Approval"
+              status={leave.approvalFlow.supervisorApproval.status}
+              date={leave.approvalFlow.supervisorApproval.signatureDate}
+              icon={
+                leave.approvalFlow.supervisorApproval.status === "approved" ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : leave.approvalFlow.supervisorApproval.status ===
+                  "rejected" ? (
+                  <XCircle className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                )
+              }
+              comments={leave.approvalFlow.supervisorApproval.comments}
+            />
+            <TimelineItem
+              title="Admin Approval"
+              status={leave.approvalFlow.adminApproval.status}
+              date={leave.approvalFlow.adminApproval.signatureDate}
+              icon={
+                leave.approvalFlow.adminApproval.status === "approved" ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : leave.approvalFlow.adminApproval.status === "rejected" ? (
+                  <XCircle className="h-4 w-4 text-red-500" />
+                ) : (
+                  <Clock className="h-4 w-4 text-yellow-500" />
+                )
+              }
+              comments={leave.approvalFlow.adminApproval.comments}
+            />
+          </Timeline>
         </CardContent>
       </Card>
+
+      {canApprove && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="flex space-x-2">
+            <Button
+              onClick={() => setIsApproveDialogOpen(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isAdmin ? "Admin Approve" : "Supervisor Approve"}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDisapproveDialogOpen(true)}
+            >
+              {isAdmin ? "Admin Reject" : "Supervisor Reject"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <ApproveLeaveDialog
         leave={leave}
@@ -307,14 +209,6 @@ function LeaveDetailSkeleton() {
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-[150px]" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[300px] w-full" />
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -88,6 +88,11 @@ interface AddAssetDialogProps {
 
 type AssetFormValues = z.infer<typeof assetSchema>;
 
+interface AssetError {
+  message: string;
+  details?: unknown;
+}
+
 export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -125,8 +130,9 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
       onOpenChange(false);
       form.reset();
     },
-    onError: (error: any) => {
-      handleApiError(error, "Failed to add asset");
+    onError: (error: unknown) => {
+      const assetError = error as AssetError;
+      toast.error(assetError.message || "Failed to add asset");
     },
   });
 

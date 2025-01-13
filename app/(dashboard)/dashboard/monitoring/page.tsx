@@ -10,31 +10,24 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MonitoringTable } from "@/components/dashboard/monitoring/monitoring-table";
-import { MonitoringDashboard } from "@/components/dashboard/monitoring/monitoring-dashboard";
+import { MonitoringDashboard } from "@/components/dashboard/monitoring";
 import { AddMonitoringDialog } from "@/components/dashboard/monitoring/add-monitoring-dialog";
-
-interface MonitoringDashboardData {
-  dueForMonitoring: any[];
-  assetsByStatus: { _id: string; count: number }[];
-  assetsWithIssues: any[];
-  totalAssets: number;
-  monitoringNeeded: number;
-  monitoringRecords: any[];
-}
+import { MonitoringData } from "@/types/common";
+import { DashboardData, MonitoredAsset } from "@/types/monitoring";
 
 export default function MonitoringPage() {
   const { data: session } = useSession();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { data: monitoringData, isLoading } = useQuery<MonitoringDashboardData>(
-    {
-      queryKey: ["monitoring-dashboard"],
-      queryFn: () => apiClient("/monitoring/dashboard", session),
-      enabled: !!session,
-    }
-  );
+  const { data: stats, isLoading } = useQuery<DashboardData>({
+    queryKey: ["monitoring-dashboard"],
+    queryFn: () => apiClient("/monitoring/dashboard", session),
+    enabled: !!session,
+  });
 
-  const { data: monitoredAssets, isLoading: isAssetsLoading } = useQuery({
+  const { data: monitoredAssets = [], isLoading: isAssetsLoading } = useQuery<
+    MonitoredAsset[]
+  >({
     queryKey: ["monitored-assets"],
     queryFn: () => apiClient("/monitoring/assets", session),
     enabled: !!session,
@@ -52,7 +45,7 @@ export default function MonitoringPage() {
         </Button>
       </div>
 
-      <MonitoringDashboard data={monitoringData} />
+      <MonitoringDashboard data={stats} />
 
       <Tabs defaultValue="due" className="space-y-4">
         <TabsList>
@@ -66,9 +59,7 @@ export default function MonitoringPage() {
               <CardTitle>Assets Due for Monitoring</CardTitle>
             </CardHeader>
             <CardContent>
-              <MonitoringTable
-                assets={monitoringData?.dueForMonitoring || []}
-              />
+              <MonitoringTable assets={stats?.dueForMonitoring || []} />
             </CardContent>
           </Card>
         </TabsContent>

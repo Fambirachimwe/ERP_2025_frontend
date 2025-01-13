@@ -3,7 +3,17 @@ import { handleApiError } from "@/lib/utils/handle-error";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export async function apiClient(endpoint: string, session: Session | null, options: RequestInit = {}) {
+interface ApiError {
+    message: string;
+    details?: unknown;
+    status?: number;
+}
+
+export async function apiClient<T>(
+    endpoint: string,
+    session: Session | null,
+    options: RequestInit = {}
+): Promise<T> {
     if (!session?.user?.accessToken) {
         throw new Error('Authentication required');
     }
@@ -33,9 +43,10 @@ export async function apiClient(endpoint: string, session: Session | null, optio
         }
 
         return data;
-    } catch (error: any) {
-        const errorMessage = error.message || 'An unexpected error occurred';
-        const errorDetails = error.details || error;
+    } catch (error: unknown) {
+        const apiError = error as ApiError;
+        const errorMessage = apiError.message || 'An unexpected error occurred';
+        const errorDetails = apiError.details || error;
         throw { message: errorMessage, details: errorDetails };
     }
 } 

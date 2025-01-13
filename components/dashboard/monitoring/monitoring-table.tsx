@@ -20,33 +20,10 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-
-interface MonitoredAsset {
-  _id: string;
-  assetId: {
-    _id: string;
-    assetId: string;
-    type: string;
-    model: string;
-    manufacturer: string;
-    status: string;
-    location: string;
-  };
-  status: string;
-  condition: string;
-  monitoredAt: string;
-  nextMonitoringDate: string;
-  monitoredBy: {
-    firstName: string;
-    lastName: string;
-  };
-  issues?: string[];
-  actionRequired?: string;
-  actionTaken?: string;
-}
+import { MonitoringRecord, MonitoredAsset } from "@/types/monitoring";
 
 interface MonitoringTableProps {
-  assets: MonitoredAsset[];
+  assets: (MonitoringRecord | MonitoredAsset)[];
 }
 
 export function MonitoringTable({ assets }: MonitoringTableProps) {
@@ -64,6 +41,12 @@ export function MonitoringTable({ assets }: MonitoringTableProps) {
   const handleViewDetails = (assetId: string) => {
     router.push(`/dashboard/monitoring/asset/${assetId}`);
   };
+
+  function isMonitoredAsset(
+    record: MonitoringRecord | MonitoredAsset
+  ): record is MonitoredAsset {
+    return "monitoredAt" in record;
+  }
 
   return (
     <>
@@ -97,9 +80,10 @@ export function MonitoringTable({ assets }: MonitoringTableProps) {
                 <TableCell>{record.assetId.model}</TableCell>
                 <TableCell>{record.assetId.location}</TableCell>
                 <TableCell>
-                  {formatDistanceToNow(new Date(record.monitoredAt), {
-                    addSuffix: true,
-                  })}
+                  {isMonitoredAsset(record) &&
+                    formatDistanceToNow(new Date(record.monitoredAt), {
+                      addSuffix: true,
+                    })}
                 </TableCell>
                 <TableCell>
                   {formatDistanceToNow(new Date(record.nextMonitoringDate), {
@@ -116,22 +100,23 @@ export function MonitoringTable({ assets }: MonitoringTableProps) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      record.condition === "excellent"
-                        ? "default"
-                        : record.condition === "good"
-                        ? "secondary"
-                        : record.condition === "fair"
-                        ? "outline"
-                        : "destructive"
-                    }
-                  >
-                    {record.condition}
-                  </Badge>
+                  {isMonitoredAsset(record) && (
+                    <Badge
+                      variant={
+                        record.condition === "excellent"
+                          ? "default"
+                          : record.condition === "good"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                    >
+                      {record.condition}
+                    </Badge>
+                  )}
                 </TableCell>
                 <TableCell>
-                  {record.monitoredBy.firstName} {record.monitoredBy.lastName}
+                  {isMonitoredAsset(record) &&
+                    `${record.monitoredBy.firstName} ${record.monitoredBy.lastName}`}
                 </TableCell>
                 <TableCell className="text-right relative p-0">
                   <ContextMenu>
@@ -142,7 +127,9 @@ export function MonitoringTable({ assets }: MonitoringTableProps) {
                       <ContextMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleMonitorClick(record);
+                          if (isMonitoredAsset(record)) {
+                            handleMonitorClick(record);
+                          }
                         }}
                       >
                         <span className="flex items-center">

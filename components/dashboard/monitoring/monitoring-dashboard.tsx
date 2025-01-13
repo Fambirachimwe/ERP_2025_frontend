@@ -4,17 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MonitoringTable } from "./monitoring-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardData } from "@/types/monitoring";
 
-export function MonitoringDashboard() {
+interface MonitoringDashboardProps {
+  data?: DashboardData;
+}
+
+export function MonitoringDashboard({ data }: MonitoringDashboardProps) {
   const { data: session } = useSession();
 
-  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
-    queryKey: ["monitoring-dashboard"],
-    queryFn: () => apiClient("/monitoring/dashboard", session),
-    enabled: !!session,
-  });
+  const { data: dashboardData, isLoading: isDashboardLoading } =
+    useQuery<DashboardData>({
+      queryKey: ["monitoring-dashboard"],
+      queryFn: () => apiClient("/monitoring/dashboard", session),
+      enabled: !!session,
+    });
 
   const { data: monitoredAssets, isLoading: isAssetsLoading } = useQuery({
     queryKey: ["monitored-assets"],

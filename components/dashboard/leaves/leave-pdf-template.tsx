@@ -9,6 +9,7 @@ import {
 import { Leave } from "@/types/leave";
 import { format } from "date-fns";
 import { getPublicFileUrl } from "@/lib/utils/pdf";
+import { differenceInDays } from "date-fns";
 
 const styles = StyleSheet.create({
   page: {
@@ -108,7 +109,7 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Leave Type:</Text>
-            <Text style={styles.value}>{leave.absenceType}</Text>
+            <Text style={styles.value}>{leave.type}</Text>
           </View>
         </View>
 
@@ -127,7 +128,12 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Days Requested:</Text>
-            <Text style={styles.value}>{leave.daysRequested}</Text>
+            <Text style={styles.value}>
+              {differenceInDays(
+                new Date(leave.endDate),
+                new Date(leave.startDate)
+              ) + 1}
+            </Text>
           </View>
         </View>
 
@@ -149,7 +155,8 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
               )}
               <Text>Employee Signature</Text>
               <Text>
-                {format(new Date(leave.employeeSignatureDate), "dd/MM/yyyy")}
+                {leave.employeeSignatureDate &&
+                  format(new Date(leave.employeeSignatureDate), "dd/MM/yyyy")}
               </Text>
             </View>
 

@@ -7,20 +7,17 @@ export interface Leave {
         email: string;
         department: string;
     };
-    supervisorId?: {
+    supervisorId: {
         _id: string;
         firstName: string;
         lastName: string;
         email: string;
     };
-    absenceType: 'Sick' | 'Vacation/Personal' | 'Study' | 'Maternity/Paternity' | 'Compassionate' | 'Special';
     startDate: string;
     endDate: string;
-    daysRequested: number;
+    type: string;
     reason: string;
-    status: 'pending' | 'supervisor_approved' | 'approved' | 'rejected';
-    employeeSignature: string;
-    employeeSignatureDate: string;
+    status: string;
     approvalFlow: {
         supervisorApproval: {
             status: 'pending' | 'approved' | 'rejected';
@@ -37,4 +34,8 @@ export interface Leave {
     };
     createdAt: string;
     updatedAt: string;
+    absenceType: 'Sick' | 'Vacation/Personal' | 'Study' | 'Maternity/Paternity' | 'Compassionate' | 'Special';
+    daysRequested: number;
+    employeeSignature?: string;
+    employeeSignatureDate?: string;
 } 

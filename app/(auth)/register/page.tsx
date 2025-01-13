@@ -17,6 +17,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
 import { fetchApi } from "@/lib/utils";
 
+interface RegisterError {
+  message: string;
+  details?: unknown;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -55,8 +60,9 @@ export default function RegisterPage() {
       } else {
         router.push("/dashboard");
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: unknown) {
+      const registerError = error as RegisterError;
+      setError(registerError.message);
     } finally {
       setIsLoading(false);
     }

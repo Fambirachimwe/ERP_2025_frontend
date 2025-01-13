@@ -1,4 +1,11 @@
-export function AssetDetails({ asset }: { asset: Asset }) {
+import { Asset } from "@/types/asset";
+import { Label } from "@/components/ui/label";
+
+interface AssetDetailsProps {
+  asset: Asset;
+}
+
+export function AssetDetails({ asset }: AssetDetailsProps) {
   return (
     <div className="space-y-4">
       {/* ... existing asset details ... */}

@@ -1,68 +1,53 @@
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Clock } from "lucide-react";
 
-interface TimelineProps {
-  items: {
-    title: string;
-    description?: string;
-    status: "complete" | "current" | "upcoming";
-    date?: string;
-    icon?: React.ReactNode;
-  }[];
+interface TimelineItemProps {
+  title: string;
+  status: string;
+  date?: string;
+  icon?: React.ReactNode;
+  comments?: string;
 }
 
-export function Timeline({ items }: TimelineProps) {
+export function TimelineItem({
+  title,
+  status,
+  date,
+  icon,
+  comments,
+}: TimelineItemProps) {
   return (
-    <div className="space-y-8">
-      {items.map((item, index) => (
-        <div key={index} className="relative pb-8">
-          {index !== items.length - 1 && (
-            <span
-              className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-gray-200"
-              aria-hidden="true"
-            />
-          )}
-          <div className="relative flex items-start space-x-3">
-            <div>
-              <div
-                className={cn(
-                  "relative flex h-8 w-8 items-center justify-center rounded-full",
-                  {
-                    "bg-primary": item.status === "complete",
-                    "bg-secondary": item.status === "current",
-                    "bg-muted": item.status === "upcoming",
-                  }
-                )}
-              >
-                {item.icon ? (
-                  item.icon
-                ) : item.status === "complete" ? (
-                  <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
-                ) : item.status === "current" ? (
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <div className="h-2.5 w-2.5 rounded-full bg-gray-400" />
-                )}
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-gray-900">
-                {item.title}
-              </div>
-              {item.description && (
-                <div className="mt-0.5 text-sm text-muted-foreground">
-                  {item.description}
-                </div>
-              )}
-              {item.date && (
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {item.date}
-                </div>
-              )}
-            </div>
+    <div className="flex gap-4 pb-8 last:pb-0">
+      <div className="flex flex-col items-center">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border bg-background">
+          {icon}
+        </div>
+        <div className="flex-1 w-[2px] bg-border" />
+      </div>
+      <div className="flex-1 space-y-2 pt-1">
+        <div className="flex items-center justify-between gap-4">
+          <div className="font-medium">{title}</div>
+          <div className="text-sm text-muted-foreground">
+            {date && format(new Date(date), "PPP")}
           </div>
         </div>
-      ))}
+        <div
+          className={cn("text-sm", {
+            "text-green-500": status === "approved",
+            "text-red-500": status === "rejected",
+            "text-yellow-500": status === "pending",
+          })}
+        >
+          Status: {status}
+        </div>
+        {comments && (
+          <div className="text-sm text-muted-foreground">{comments}</div>
+        )}
+      </div>
     </div>
   );
+}
+
+export function Timeline({ children }: { children: React.ReactNode }) {
+  return <div className="relative space-y-4 pt-4">{children}</div>;
 }

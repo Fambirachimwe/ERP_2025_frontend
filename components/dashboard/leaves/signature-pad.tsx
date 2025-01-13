@@ -5,13 +5,13 @@ import SignaturePad from "react-signature-canvas";
 import { Button } from "@/components/ui/button";
 
 interface SignaturePadProps {
-  onSignatureComplete: (signatureUrl: string) => void;
+  onSignatureComplete: (signature: string) => void;
 }
 
 export function SignaturePadComponent({
   onSignatureComplete,
 }: SignaturePadProps) {
-  const signaturePadRef = useRef<any>(null);
+  const signaturePadRef = useRef<SignaturePad | null>(null);
 
   const handleClear = () => {
     signaturePadRef.current?.clear();
@@ -20,11 +20,11 @@ export function SignaturePadComponent({
 
   // Update parent component whenever signature changes
   const handleSignatureChange = () => {
-    if (!signaturePadRef.current?.isEmpty()) {
-      const signatureDataUrl = signaturePadRef.current.toDataURL();
-      onSignatureComplete(signatureDataUrl);
-    } else {
+    if (signaturePadRef.current?.isEmpty?.()) {
       onSignatureComplete("");
+    } else {
+      const signatureDataUrl = signaturePadRef.current?.toDataURL();
+      signatureDataUrl && onSignatureComplete(signatureDataUrl);
     }
   };
 

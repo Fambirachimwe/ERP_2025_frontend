@@ -8,6 +8,16 @@ interface ExtendedJWT extends JWT {
     accessToken: string;
 }
 
+interface User {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string;
+    roles: string[];
+    accessToken: string;
+}
+
 export const authOptions: NextAuthConfig = {
     pages: {
         signIn: "/login",
@@ -37,12 +47,14 @@ export const authOptions: NextAuthConfig = {
                     });
 
                     return {
-                        id: data.user._id,
+                        _id: data.user._id,
+                        firstName: data.user.firstName,
+                        lastName: data.user.lastName,
                         email: data.user.email,
-                        name: `${data.user.firstName} ${data.user.lastName}`,
+                        department: data.user.department,
                         roles: data.user.roles,
                         accessToken: data.token,
-                    };
+                    } as User;
                 } catch (error: any) {
                     throw new Error(error.message || "Invalid credentials");
                 }
@@ -52,16 +64,28 @@ export const authOptions: NextAuthConfig = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                (token as ExtendedJWT).roles = user.roles as string[];
-                (token as ExtendedJWT).accessToken = user.accessToken as string;
+                token.roles = user.roles;
+                token._id = user._id;
+                token.firstName = user.firstName;
+                token.lastName = user.lastName;
+                token.department = user.department;
+                token.accessToken = user.accessToken;
             }
             return token;
         },
         async session({ session, token }) {
-            const jwtToken = token as ExtendedJWT;
-            session.user.roles = jwtToken.roles ?? [];
-            session.user.accessToken = jwtToken.accessToken ?? "";
-            return session;
-        },
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    _id: token._id as string,
+                    firstName: token.firstName as string,
+                    lastName: token.lastName as string,
+                    department: token.department as string,
+                    roles: token.roles as string[],
+                    accessToken: token.accessToken as string,
+                }
+            };
+        }
     },
 }; 

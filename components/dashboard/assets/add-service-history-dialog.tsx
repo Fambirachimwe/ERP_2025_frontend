@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
@@ -66,6 +66,11 @@ interface AddServiceHistoryDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface ServiceHistoryError {
+  message: string;
+  details?: unknown;
+}
+
 export function AddServiceHistoryDialog({
   assetId,
   open,
@@ -105,9 +110,9 @@ export function AddServiceHistoryDialog({
       onOpenChange(false);
       form.reset();
     },
-    onError: (error: any) => {
-      console.log(error);
-      toast.error(error.message || "Failed to add service history");
+    onError: (error: unknown) => {
+      const serviceError = error as ServiceHistoryError;
+      toast.error(serviceError.message || "Failed to add service history");
     },
   });
 
