@@ -48,6 +48,16 @@ export default function LeavePage() {
     ((isAdmin && leave.approvalFlow.supervisorApproval.status === "approved") ||
       (isSupervisor && leave.status === "pending"));
 
+  // Hide buttons if leave is already approved or rejected
+  const isLeaveFinalized =
+    leave.status === "approved" || leave.status === "rejected";
+
+  // For supervisor: show buttons only if leave is pending
+  const showSupervisorActions = isSupervisor && leave.status === "pending";
+
+  // For admin: show buttons only if leave is supervisor_approved
+  const showAdminActions = isAdmin && leave.status === "supervisor_approved";
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -131,26 +141,36 @@ export default function LeavePage() {
         </CardContent>
       </Card>
 
-      {canApprove && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex space-x-2">
-            <Button
-              onClick={() => setIsApproveDialogOpen(true)}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isAdmin ? "Admin Approve" : "Supervisor Approve"}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => setIsDisapproveDialogOpen(true)}
-            >
-              {isAdmin ? "Admin Reject" : "Supervisor Reject"}
-            </Button>
-          </CardContent>
-        </Card>
+      {!isLeaveFinalized && (
+        <div className="flex justify-end space-x-4">
+          {showSupervisorActions && (
+            <>
+              <Button onClick={() => setIsApproveDialogOpen(true)}>
+                Approve Leave
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setIsDisapproveDialogOpen(true)}
+              >
+                Reject Leave
+              </Button>
+            </>
+          )}
+
+          {showAdminActions && (
+            <>
+              <Button onClick={() => setIsApproveDialogOpen(true)}>
+                Approve Leave
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setIsDisapproveDialogOpen(true)}
+              >
+                Reject Leave
+              </Button>
+            </>
+          )}
+        </div>
       )}
 
       <ApproveLeaveDialog

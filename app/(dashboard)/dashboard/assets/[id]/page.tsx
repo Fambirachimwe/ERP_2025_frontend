@@ -160,18 +160,19 @@ export default function AssetDetailPage() {
                   <span className="font-medium">Serial Number:</span>
                   <span>{asset.serialNumber}</span>
                 </div>
-                {asset.type === "vehicle" && asset.licensePlateNumber && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="font-medium">License Plate:</span>
-                      <span>{asset.licensePlateNumber}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium">Chassis Number:</span>
-                      <span>{asset.vehicleDetails?.chassisNumber}</span>
-                    </div>
-                  </>
-                )}
+                {asset.type === "vehicle" &&
+                  asset.vehicleDetails?.licensePlateNumber && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="font-medium">License Plate:</span>
+                        <span>{asset.vehicleDetails.licensePlateNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium">Chassis Number:</span>
+                        <span>{asset.vehicleDetails.chassisNumber}</span>
+                      </div>
+                    </>
+                  )}
                 <div className="flex justify-between">
                   <span className="font-medium">Location:</span>
                   <span>{asset.location}</span>

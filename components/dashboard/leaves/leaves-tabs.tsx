@@ -24,7 +24,7 @@ export function LeavesTabs({ leaves, userLeaves }: LeavesTabsProps) {
     if (!currentUserId) return false;
 
     // For supervisors: show leaves where they are the supervisor and status is pending
-    if (isSupervisor && leave?.supervisorId === currentUserId) {
+    if (isSupervisor && leave?.supervisorId?._id === currentUserId) {
       return (
         leave.status === "pending" &&
         leave.approvalFlow.supervisorApproval.status === "pending"

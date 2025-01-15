@@ -94,7 +94,8 @@ export default function ReferenceDetailPage() {
             <div className="flex justify-between items-center">
               <span className="font-medium">Uploaded By:</span>
               <span>
-                {reference.uploadedBy.firstName} {reference.uploadedBy.lastName}
+                {reference?.uploadedBy?.firstName}{" "}
+                {reference?.uploadedBy?.lastName}
               </span>
             </div>
             <div className="flex justify-between items-center">

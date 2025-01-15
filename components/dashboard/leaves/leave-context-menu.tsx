@@ -25,18 +25,27 @@ import { Leave } from "@/types/leave";
 
 interface LeaveContextMenuProps {
   leave: Leave;
-  onApprove?: () => void;
-  onDisapprove?: () => void;
 }
 
-export function LeaveContextMenu({
-  leave,
-  onApprove,
-  onDisapprove,
-}: LeaveContextMenuProps) {
+export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+
+  const isSupervisor = session?.user?._id === leave.supervisorId._id;
+  const isAdmin = session?.user?.roles?.some((role) =>
+    ["administrator", "sysAdmin"].includes(role)
+  );
+
+  // Hide buttons if leave is already approved or rejected
+  const isLeaveFinalized =
+    leave.status === "approved" || leave.status === "rejected";
+
+  // For supervisor: show buttons only if leave is pending
+  const showSupervisorActions = isSupervisor && leave.status === "pending";
+
+  // For admin: show buttons only if leave is supervisor_approved
+  const showAdminActions = isAdmin && leave.status === "supervisor_approved";
 
   const deleteMutation = useMutation({
     mutationFn: () =>
@@ -77,6 +86,26 @@ export function LeaveContextMenu({
     }
   };
 
+  if (isLeaveFinalized) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            onClick={() => router.push(`/dashboard/leaves/${leave._id}`)}
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -91,32 +120,39 @@ export function LeaveContextMenu({
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        {leave.status === "pending" && onApprove && (
-          <DropdownMenuItem onClick={onApprove}>
-            <CheckCircle className="mr-2 h-4 w-4" />
-            Approve
-          </DropdownMenuItem>
+
+        {showSupervisorActions && (
+          <>
+            <DropdownMenuItem onClick={() => handleApprove(leave)}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approve
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReject(leave)}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Reject
+            </DropdownMenuItem>
+          </>
         )}
-        {leave.status === "pending" && onDisapprove && (
-          <DropdownMenuItem onClick={onDisapprove}>
-            <XCircle className="mr-2 h-4 w-4" />
-            Reject
-          </DropdownMenuItem>
+
+        {showAdminActions && (
+          <>
+            <DropdownMenuItem onClick={() => handleApprove(leave)}>
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Approve
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleReject(leave)}>
+              <XCircle className="mr-2 h-4 w-4" />
+              Reject
+            </DropdownMenuItem>
+          </>
         )}
+
         {leave.status === "pending" && (
           <DropdownMenuItem onClick={handleNotify}>
             <Bell className="mr-2 h-4 w-4" />
             Notify Supervisor
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleDelete}
-          className="text-destructive focus:text-destructive"
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete Request
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

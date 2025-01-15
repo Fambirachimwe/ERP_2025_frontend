@@ -30,6 +30,8 @@ export interface Leave {
             signature?: string;
             signatureDate?: string;
             comments?: string;
+            adminId?: string;
+            approvalDate?: string;
         };
     };
     createdAt: string;
@@ -38,4 +40,5 @@ export interface Leave {
     daysRequested: number;
     employeeSignature?: string;
     employeeSignatureDate?: string;
+    approvalDate?: string;
 } 

@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { Leave } from "@/types/leave";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +12,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SignaturePadComponent } from "@/components/dashboard/leaves/signature-pad";
+import { Label } from "@/components/ui/label";
+import { SignaturePadComponent } from "./signature-pad";
+import { toast } from "sonner";
 
 interface ApproveLeaveDialogProps {
-  leave: Leave;
+  leave: Leave | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -29,68 +29,80 @@ export function ApproveLeaveDialog({
   open,
   onOpenChange,
 }: ApproveLeaveDialogProps) {
-  const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
-  const [signature, setSignature] = useState<string>("");
   const [comments, setComments] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signature, setSignature] = useState<string>("");
 
+  const isSupervisor = session?.user?._id === leave?.supervisorId._id;
   const isAdmin = session?.user?.roles?.some((role) =>
-    ["sysAdmin", "administrator"].includes(role)
+    ["administrator", "sysAdmin"].includes(role)
   );
 
-  const handleApprove = async () => {
-    if (!signature) return;
+  // Check if admin can approve (supervisor must have approved first)
+  const canAdminApprove = isAdmin && leave?.status === "supervisor_approved";
 
-    setIsSubmitting(true);
-    try {
-      await apiClient(`/leaves/${leave._id}/approve`, session, {
-        method: "PUT",
-        body: JSON.stringify({ signature, comments }),
+  // Prevent admin from approving if supervisor hasn't approved yet
+  if (isAdmin && leave?.status !== "supervisor_approved") {
+    return null;
+  }
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      if (!leave) return;
+
+      const approvalData = {
+        status: "approved",
+        comments,
+        signature,
+        approvalType: isSupervisor ? "supervisor" : "admin",
+      };
+
+      return await apiClient(`/leaves/${leave._id}/status`, session, {
+        method: "POST",
+        body: JSON.stringify(approvalData),
       });
-
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leaves"] });
-      queryClient.invalidateQueries({ queryKey: ["leave", leave._id] });
-      queryClient.invalidateQueries({ queryKey: ["leaveBalance"] });
-
-      router.refresh();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Error approving leave:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      setComments("");
+      setSignature("");
+      toast.success(
+        isSupervisor
+          ? "Leave request approved and forwarded to admin"
+          : "Leave request approved"
+      );
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to approve leave request");
+    },
+  });
 
-  const getDialogTitle = () => {
-    if (isAdmin && leave.status === "supervisor_approved") {
-      return "Final Approval";
+  const handleApprove = () => {
+    if (!comments || !signature) {
+      toast.error("Please provide both comments and signature");
+      return;
     }
-    return "Approve Leave Request";
-  };
-
-  const getDialogMessage = () => {
-    if (isAdmin && leave.status === "supervisor_approved") {
-      return "You are about to give final approval for this leave request. This action cannot be undone.";
-    }
-    return "You are about to approve this leave request. The request will then be sent for final approval.";
+    mutation.mutate();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{getDialogTitle()}</DialogTitle>
+          <DialogTitle>
+            {isSupervisor ? "Supervisor Approval" : "Admin Approval"}
+          </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <p className="text-sm text-muted-foreground">{getDialogMessage()}</p>
+        <div className="space-y-4">
           <div className="space-y-2">
             <Label>Comments</Label>
             <Textarea
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              placeholder="Add any comments (optional)"
+              placeholder="Add your comments (required)"
+              required
             />
           </div>
           <div className="space-y-2">
@@ -102,12 +114,15 @@ export function ApproveLeaveDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
+            disabled={mutation.isPending}
           >
             Cancel
           </Button>
-          <Button onClick={handleApprove} disabled={!signature || isSubmitting}>
-            {isSubmitting ? "Approving..." : "Approve"}
+          <Button
+            onClick={handleApprove}
+            disabled={!comments || !signature || mutation.isPending}
+          >
+            {mutation.isPending ? "Approving..." : "Approve"}
           </Button>
         </DialogFooter>
       </DialogContent>
