@@ -4,18 +4,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import {
-  MoreHorizontal,
-  Eye,
-  Trash2,
-  Bell,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { MoreHorizontal, Eye, Bell, CheckCircle, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -47,16 +39,16 @@ export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
   // For admin: show buttons only if leave is supervisor_approved
   const showAdminActions = isAdmin && leave.status === "supervisor_approved";
 
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      apiClient(`/leaves/${leave._id}`, session, {
-        method: "DELETE",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["leaves"] });
-      toast.success("Leave request deleted successfully");
-    },
-  });
+  // const deleteMutation = useMutation({
+  //   mutationFn: () =>
+  //     apiClient(`/leaves/${leave._id}`, session, {
+  //       method: "DELETE",
+  //     }),
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["leaves"] });
+  //     toast.success("Leave request deleted successfully");
+  //   },
+  // });
 
   const notifyMutation = useMutation({
     mutationFn: () =>
@@ -68,14 +60,36 @@ export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
     },
   });
 
-  const handleDelete = async () => {
-    try {
-      await deleteMutation.mutateAsync();
-    } catch (error) {
-      console.error("Error deleting leave:", error);
-      toast.error("Failed to delete leave request");
-    }
-  };
+  const approveMutation = useMutation({
+    mutationFn: () =>
+      apiClient(`/leaves/${leave._id}/approve`, session, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leaves"] });
+      toast.success("Leave request approved successfully");
+    },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: () =>
+      apiClient(`/leaves/${leave._id}/reject`, session, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["leaves"] });
+      toast.success("Leave request rejected successfully");
+    },
+  });
+
+  // const handleDelete = async () => {
+  //   try {
+  //     await deleteMutation.mutateAsync();
+  //   } catch (error) {
+  //     console.error("Error deleting leave:", error);
+  //     toast.error("Failed to delete leave request");
+  //   }
+  // };
 
   const handleNotify = async () => {
     try {
@@ -83,6 +97,24 @@ export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
     } catch (error) {
       console.error("Error notifying supervisor:", error);
       toast.error("Failed to notify supervisor");
+    }
+  };
+
+  const handleApprove = async () => {
+    try {
+      await approveMutation.mutateAsync();
+    } catch (error) {
+      console.error("Error approving leave:", error);
+      toast.error("Failed to approve leave request");
+    }
+  };
+
+  const handleReject = async () => {
+    try {
+      await rejectMutation.mutateAsync();
+    } catch (error) {
+      console.error("Error rejecting leave:", error);
+      toast.error("Failed to reject leave request");
     }
   };
 
@@ -123,11 +155,11 @@ export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
 
         {showSupervisorActions && (
           <>
-            <DropdownMenuItem onClick={() => handleApprove(leave)}>
+            <DropdownMenuItem onClick={handleApprove}>
               <CheckCircle className="mr-2 h-4 w-4" />
               Approve
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleReject(leave)}>
+            <DropdownMenuItem onClick={() => handleReject()}>
               <XCircle className="mr-2 h-4 w-4" />
               Reject
             </DropdownMenuItem>
@@ -136,11 +168,11 @@ export function LeaveContextMenu({ leave }: LeaveContextMenuProps) {
 
         {showAdminActions && (
           <>
-            <DropdownMenuItem onClick={() => handleApprove(leave)}>
+            <DropdownMenuItem onClick={handleApprove}>
               <CheckCircle className="mr-2 h-4 w-4" />
               Approve
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleReject(leave)}>
+            <DropdownMenuItem onClick={() => handleReject()}>
               <XCircle className="mr-2 h-4 w-4" />
               Reject
             </DropdownMenuItem>

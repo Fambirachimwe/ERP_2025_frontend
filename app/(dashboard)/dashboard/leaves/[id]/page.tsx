@@ -43,10 +43,10 @@ export default function LeavePage() {
   console.log("Is Admin:", isAdmin);
   console.log("Is Supervisor:", isSupervisor);
 
-  const canApprove =
-    (isAdmin || isSupervisor) &&
-    ((isAdmin && leave.approvalFlow.supervisorApproval.status === "approved") ||
-      (isSupervisor && leave.status === "pending"));
+  // const canApprove =
+  //   (isAdmin || isSupervisor) &&
+  //   ((isAdmin && leave.approvalFlow.supervisorApproval.status === "approved") ||
+  //     (isSupervisor && leave.status === "pending"));
 
   // Hide buttons if leave is already approved or rejected
   const isLeaveFinalized =

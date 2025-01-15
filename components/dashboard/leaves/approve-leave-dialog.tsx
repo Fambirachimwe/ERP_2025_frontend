@@ -39,14 +39,6 @@ export function ApproveLeaveDialog({
     ["administrator", "sysAdmin"].includes(role)
   );
 
-  // Check if admin can approve (supervisor must have approved first)
-  const canAdminApprove = isAdmin && leave?.status === "supervisor_approved";
-
-  // Prevent admin from approving if supervisor hasn't approved yet
-  if (isAdmin && leave?.status !== "supervisor_approved") {
-    return null;
-  }
-
   const mutation = useMutation({
     mutationFn: async () => {
       if (!leave) return;
@@ -74,10 +66,18 @@ export function ApproveLeaveDialog({
           : "Leave request approved"
       );
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to approve leave request");
+    onError: () => {
+      toast.error("Failed to approve leave request");
     },
   });
+
+  // Check if admin can approve (supervisor must have approved first)
+  // const canAdminApprove = isAdmin && leave?.status === "supervisor_approved";
+
+  // Prevent admin from approving if supervisor hasn't approved yet
+  if (isAdmin && leave?.status !== "supervisor_approved") {
+    return null;
+  }
 
   const handleApprove = () => {
     if (!comments || !signature) {

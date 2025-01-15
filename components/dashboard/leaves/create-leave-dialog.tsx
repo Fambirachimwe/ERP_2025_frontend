@@ -75,7 +75,7 @@ export function CreateLeaveDialog({
 
   console.log(availableSupervisors);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof leaveSchema>>({
     resolver: zodResolver(leaveSchema),
     defaultValues: {
       supervisorId: "",
