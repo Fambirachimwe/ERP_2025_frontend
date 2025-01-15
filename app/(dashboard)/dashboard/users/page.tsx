@@ -10,15 +10,17 @@ import { UsersTable } from "@/components/dashboard/users/users-table";
 import { AddUserDialog } from "@/components/dashboard/users/add-user-dialog";
 import { UploadUsersDialog } from "@/components/dashboard/users/upload-users-dialog";
 import { DataTableSkeleton } from "@/components/ui/data-table-skeleton";
+import { User } from "@/types/user";
 
 export default function UsersPage() {
   const { data: session } = useSession();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["users"],
     queryFn: () => apiClient("/users", session),
+    enabled: !!session,
   });
 
   if (isLoading) return <DataTableSkeleton />;
@@ -39,7 +41,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <UsersTable users={users || []} />
+      <UsersTable users={users} />
 
       <AddUserDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
       <UploadUsersDialog

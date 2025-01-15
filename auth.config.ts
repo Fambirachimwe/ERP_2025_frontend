@@ -1,4 +1,5 @@
-import type { NextAuthConfig } from "next-auth";
+import { NextAuthConfig, Session } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 
 declare module "next-auth" {
@@ -79,17 +80,17 @@ export const authConfig: NextAuthConfig = {
             }
             return token;
         },
-        async session({ session, token }) {
+        async session({ session, token }): Promise<Session> {
             return {
                 ...session,
                 user: {
                     ...session.user,
-                    _id: token._id,
-                    firstName: token.firstName,
-                    lastName: token.lastName,
-                    department: token.department,
-                    roles: token.roles,
-                    accessToken: token.accessToken,
+                    _id: token._id as string,
+                    firstName: token.firstName as string,
+                    lastName: token.lastName as string,
+                    department: token.department as string,
+                    roles: token.roles as string[],
+                    accessToken: token.accessToken as string,
                 },
             };
         },

@@ -34,20 +34,25 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { handleApiError } from "@/lib/utils/handle-error";
 
-const editAssetSchema = z.object({
+const assetSchema = z.object({
   model: z.string().min(1, "Model is required"),
   manufacturer: z.string().min(1, "Manufacturer is required"),
   serialNumber: z.string().min(1, "Serial number is required"),
   location: z.string().min(1, "Location is required"),
   department: z.string().min(1, "Department is required"),
-  status: z.enum(["active", "inactive", "disposed"]),
-  price: z.number().min(0),
-  purchaseDate: z.string().min(1, "Purchase date is required"),
+  status: z.string().min(1, "Status is required"),
+  price: z.number().optional(),
+  purchaseDate: z.string().optional(),
   warrantyExpiry: z.string().optional(),
-  // Software specific fields
   licenseKey: z.string().optional(),
   version: z.string().optional(),
   expirationDate: z.string().optional(),
+  vehicleDetails: z
+    .object({
+      licensePlateNumber: z.string(),
+      chassisNumber: z.string(),
+    })
+    .optional(),
 });
 
 interface EditAssetDialogProps {
@@ -65,8 +70,8 @@ export function EditAssetDialog({
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm({
-    resolver: zodResolver(editAssetSchema),
+  const form = useForm<z.infer<typeof assetSchema>>({
+    resolver: zodResolver(assetSchema),
     defaultValues: {
       model: asset.model,
       manufacturer: asset.manufacturer,
@@ -74,17 +79,18 @@ export function EditAssetDialog({
       location: asset.location,
       department: asset.department,
       status: asset.status,
-      price: asset.price,
+      price: asset.price || undefined,
       purchaseDate: asset.purchaseDate || "",
       warrantyExpiry: asset.warrantyExpiry || "",
       licenseKey: asset.licenseKey || "",
       version: asset.version || "",
       expirationDate: asset.expirationDate || "",
+      vehicleDetails: asset.vehicleDetails,
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof editAssetSchema>) =>
+    mutationFn: (values: z.infer<typeof assetSchema>) =>
       apiClient(`/assets/${asset._id}`, session, {
         method: "PUT",
         body: JSON.stringify(values),
@@ -99,7 +105,7 @@ export function EditAssetDialog({
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof editAssetSchema>) => {
+  const onSubmit = async (values: z.infer<typeof assetSchema>) => {
     setIsLoading(true);
     try {
       const updatedValues = {

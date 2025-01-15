@@ -66,7 +66,7 @@ export function AssetCard({ asset }: AssetCardProps) {
           {asset.type === "vehicle" && asset.vehicleDetails && (
             <>
               <p className="text-xs">
-                License Plate: {asset.vehicleDetails.licensePlate}
+                License Plate: {asset.vehicleDetails.licensePlateNumber}
               </p>
               <p className="text-xs">
                 Chassis Number: {asset.vehicleDetails.chassisNumber}

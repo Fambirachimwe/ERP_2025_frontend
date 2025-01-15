@@ -11,16 +11,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@/types/user";
 import { signOut } from "next-auth/react";
 import { toast } from "sonner";
+
+interface UserNavProps {
+  user: {
+    email?: string | null;
+    name?: string | null;
+    image?: string | null;
+    firstName?: string;
+    lastName?: string;
+  };
+}
 
 interface ApiError {
   message: string;
   details?: unknown;
 }
 
-export function UserNav({ user }: { user: User }) {
+export function UserNav({ user }: UserNavProps) {
   const handleSignOut = async () => {
     try {
       await signOut({ redirect: true, callbackUrl: "/login" });
@@ -30,22 +39,29 @@ export function UserNav({ user }: { user: User }) {
     }
   };
 
+  const displayName =
+    user.name || `${user.firstName} ${user.lastName}` || user.email;
+  const initials = displayName?.charAt(0).toUpperCase() || "U";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/01.png" alt={user?.name || ""} />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            <AvatarImage
+              src={user.image || "/avatars/01.png"}
+              alt={displayName || ""}
+            />
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name}</p>
+            <p className="text-sm font-medium leading-none">{displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              {user?.email}
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
