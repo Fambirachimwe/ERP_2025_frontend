@@ -85,9 +85,13 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
         <View style={styles.headerContainer}>
           <View style={styles.logoContainer}>
             {signature ? (
-              <Image src={signature} style={styles.logo} />
+              <Image src={signature} style={styles.logo} alt="Company Logo" />
             ) : (
-              <Image src={getPublicFileUrl("/logo.png")} style={styles.logo} />
+              <Image
+                src={getPublicFileUrl("/logo.png")}
+                style={styles.logo}
+                alt="Company Logo"
+              />
             )}
           </View>
           <View style={styles.headerText}>
@@ -151,6 +155,7 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
                 <Image
                   src={`${process.env.NEXT_PUBLIC_API_URL}${leave.employeeSignature}`}
                   style={styles.signature}
+                  alt="Employee Signature"
                 />
               )}
               <Text>Employee Signature</Text>
@@ -165,6 +170,7 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
                 <Image
                   src={`${process.env.NEXT_PUBLIC_API_URL}${leave.approvalFlow.supervisorApproval.signature}`}
                   style={styles.signature}
+                  alt="Supervisor Signature"
                 />
                 <Text>Supervisor Signature</Text>
                 <Text>
@@ -185,6 +191,7 @@ export function LeavePDFTemplate({ leave, signature }: LeavePDFTemplateProps) {
                 <Image
                   src={`${process.env.NEXT_PUBLIC_API_URL}${leave.approvalFlow.adminApproval.signature}`}
                   style={styles.signature}
+                  alt="Admin Signature"
                 />
                 <Text>Admin Signature</Text>
                 <Text>

@@ -8,17 +8,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardData } from "@/types/monitoring";
 
 interface MonitoringDashboardProps {
-  data?: DashboardData;
+  data: DashboardData;
 }
 
 export function MonitoringDashboard({ data }: MonitoringDashboardProps) {
   const { data: session } = useSession();
 
-  const { data: dashboardData, isLoading: isDashboardLoading } =
+  const { data: dashboardData = data, isLoading: isDashboardLoading } =
     useQuery<DashboardData>({
       queryKey: ["monitoring-dashboard"],
       queryFn: () => apiClient("/monitoring/dashboard", session),
       enabled: !!session,
+      initialData: data,
     });
 
   const { data: monitoredAssets, isLoading: isAssetsLoading } = useQuery({
@@ -26,6 +27,8 @@ export function MonitoringDashboard({ data }: MonitoringDashboardProps) {
     queryFn: () => apiClient("/monitoring/assets", session),
     enabled: !!session,
   });
+
+  console.log(monitoredAssets);
 
   if (isDashboardLoading || isAssetsLoading) {
     return <DashboardSkeleton />;

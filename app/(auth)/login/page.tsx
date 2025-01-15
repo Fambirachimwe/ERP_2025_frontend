@@ -50,6 +50,7 @@ export default function LoginPage() {
 
       router.push(callbackUrl);
     } catch (error) {
+      console.error("Login error:", error);
       setError({ message: "An error occurred. Please try again." });
     } finally {
       setIsLoading(false);

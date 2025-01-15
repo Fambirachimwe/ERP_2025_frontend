@@ -21,6 +21,14 @@ export interface MonitoringRecord {
     };
     nextMonitoringDate: string;
     status: string;
+    issues?: string[];
+    actionRequired?: string;
+    actionTaken?: string;
+    monitoredBy?: {
+        _id: string;
+        firstName: string;
+        lastName: string;
+    };
 }
 
 export interface StatusCount {

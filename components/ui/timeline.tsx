@@ -48,6 +48,33 @@ export function TimelineItem({
   );
 }
 
-export function Timeline({ children }: { children: React.ReactNode }) {
-  return <div className="relative space-y-4 pt-4">{children}</div>;
+interface TimelineProps {
+  items?: {
+    title: string;
+    status?: string;
+    date: string;
+    icon: React.ReactNode;
+    comments?: string;
+  }[];
+  children?: React.ReactNode;
+}
+
+export function Timeline({ items, children }: TimelineProps) {
+  if (items) {
+    return (
+      <div className="relative space-y-4">
+        {items.map((item, index) => (
+          <TimelineItem
+            key={index}
+            title={item.title}
+            status={item.status || ""}
+            date={item.date}
+            icon={item.icon}
+            comments={item.comments}
+          />
+        ))}
+      </div>
+    );
+  }
+  return <div className="relative space-y-4">{children}</div>;
 }

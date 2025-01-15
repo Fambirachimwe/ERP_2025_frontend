@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
@@ -70,7 +69,7 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
       });
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       // Also invalidate leave balances query if it exists
       queryClient.invalidateQueries({ queryKey: ["leave-balance"] });
@@ -78,8 +77,8 @@ export function AddUserDialog({ open, onOpenChange }: AddUserDialogProps) {
       form.reset();
       onOpenChange(false);
     },
-    onError: (error: any) => {
-      toast.error(error.message || "Failed to create user");
+    onError: () => {
+      toast.error("Failed to create user");
     },
   });
 

@@ -7,7 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -18,15 +18,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { MonitoringRecord } from "@/types/monitoring";
 
 export default function AssetMonitoringDetailPage() {
   const { id } = useParams();
   const { data: session } = useSession();
   const router = useRouter();
 
-  const { data: monitoringHistory, isLoading } = useQuery({
+  const { data: monitoringHistory = [], isLoading } = useQuery<
+    MonitoringRecord[]
+  >({
     queryKey: ["asset-monitoring-history", id],
     queryFn: () => apiClient(`/monitoring/${id}/history`, session),
+    enabled: !!session && !!id,
   });
 
   if (isLoading) return <DetailPageSkeleton />;
@@ -92,23 +96,23 @@ export default function AssetMonitoringDetailPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {monitoringHistory?.map((record: any) => (
+              {monitoringHistory?.map((record: MonitoringRecord) => (
                 <TableRow key={record._id}>
                   <TableCell>
-                    {format(new Date(record.monitoredAt), "PPP")}
+                    {format(new Date(record.nextMonitoringDate), "PPP")}
                   </TableCell>
                   <TableCell>
                     <Badge>{record.status}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge>{record.condition}</Badge>
+                    <Badge>{record.assetId.location}</Badge>
                   </TableCell>
-                  <TableCell>{record.location}</TableCell>
                   <TableCell>{record.issues || "None"}</TableCell>
                   <TableCell>{record.actionRequired || "None"}</TableCell>
                   <TableCell>{record.actionTaken || "None"}</TableCell>
                   <TableCell>
-                    {record.monitoredBy.firstName} {record.monitoredBy.lastName}
+                    {record?.monitoredBy?.firstName}{" "}
+                    {record?.monitoredBy?.lastName}
                   </TableCell>
                 </TableRow>
               ))}

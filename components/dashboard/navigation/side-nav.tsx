@@ -12,7 +12,6 @@ import {
   FileText,
   Settings,
   Users,
-  Files,
   Calendar,
 } from "lucide-react";
 

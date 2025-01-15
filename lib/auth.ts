@@ -1,11 +1,10 @@
 import type { NextAuthConfig } from "next-auth";
-import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { fetchApi } from "./utils";
 
-interface ExtendedJWT extends JWT {
-    roles: string[];
-    accessToken: string;
+interface AuthError {
+    message: string;
+    status?: number;
 }
 
 interface User {
@@ -55,8 +54,9 @@ export const authOptions: NextAuthConfig = {
                         roles: data.user.roles,
                         accessToken: data.token,
                     } as User;
-                } catch (error: any) {
-                    throw new Error(error.message || "Invalid credentials");
+                } catch (error: unknown) {
+                    const authError = error as AuthError;
+                    throw new Error(authError.message || "Invalid credentials");
                 }
             },
         }),

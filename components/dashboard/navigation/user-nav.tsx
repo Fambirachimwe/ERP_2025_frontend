@@ -11,9 +11,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { User } from "@/types/user";
 import { signOut } from "next-auth/react";
+import { toast } from "sonner";
 
-export function UserNav({ user }: { user: any }) {
+interface ApiError {
+  message: string;
+  details?: unknown;
+}
+
+export function UserNav({ user }: { user: User }) {
+  const handleSignOut = async () => {
+    try {
+      await signOut({ redirect: true, callbackUrl: "/login" });
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      toast.error(apiError.message || "Failed to sign out");
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -39,7 +55,7 @@ export function UserNav({ user }: { user: any }) {
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

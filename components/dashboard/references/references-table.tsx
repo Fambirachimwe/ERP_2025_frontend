@@ -17,7 +17,6 @@ import {
   Loader2,
   Download,
   MoreHorizontal,
-  Pencil,
   Eye,
   Trash,
 } from "lucide-react";
@@ -154,6 +153,7 @@ export function ReferencesTable({ references }: ReferencesTableProps) {
     try {
       await deleteMutation.mutateAsync(referenceId);
     } catch (error) {
+      console.log(error);
       // Error is handled in mutation callbacks
     }
   };

@@ -8,14 +8,13 @@ import { Leave } from "@/types/leave";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import { useState } from "react";
 import { ApproveLeaveDialog } from "@/components/dashboard/leaves/approve-leave-dialog";
 import { DisapproveLeaveDialog } from "@/components/dashboard/leaves/disapprove-leave-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Timeline, TimelineItem } from "@/components/ui/timeline";
+import { Timeline } from "@/components/ui/timeline";
 
 export default function LeavePage() {
   const { data: session } = useSession();
@@ -111,39 +110,24 @@ export default function LeavePage() {
           <CardTitle>Approval Timeline</CardTitle>
         </CardHeader>
         <CardContent>
-          <Timeline>
-            <TimelineItem
-              title="Supervisor Approval"
-              status={leave.approvalFlow.supervisorApproval.status}
-              date={leave.approvalFlow.supervisorApproval.signatureDate}
-              icon={
-                leave.approvalFlow.supervisorApproval.status === "approved" ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : leave.approvalFlow.supervisorApproval.status ===
-                  "rejected" ? (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                ) : (
-                  <Clock className="h-4 w-4 text-yellow-500" />
-                )
-              }
-              comments={leave.approvalFlow.supervisorApproval.comments}
-            />
-            <TimelineItem
-              title="Admin Approval"
-              status={leave.approvalFlow.adminApproval.status}
-              date={leave.approvalFlow.adminApproval.signatureDate}
-              icon={
-                leave.approvalFlow.adminApproval.status === "approved" ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                ) : leave.approvalFlow.adminApproval.status === "rejected" ? (
-                  <XCircle className="h-4 w-4 text-red-500" />
-                ) : (
-                  <Clock className="h-4 w-4 text-yellow-500" />
-                )
-              }
-              comments={leave.approvalFlow.adminApproval.comments}
-            />
-          </Timeline>
+          <Timeline
+            items={[
+              {
+                title: "Supervisor Approval",
+                status: leave.approvalFlow.supervisorApproval.status,
+                date: leave.approvalFlow.supervisorApproval.signatureDate || "",
+                icon: <CheckCircle className="h-4 w-4" />,
+                comments: leave.approvalFlow.supervisorApproval.comments,
+              },
+              {
+                title: "Admin Approval",
+                status: leave.approvalFlow.adminApproval.status,
+                date: leave.approvalFlow.adminApproval.signatureDate || "",
+                icon: <CheckCircle className="h-4 w-4" />,
+                comments: leave.approvalFlow.adminApproval.comments,
+              },
+            ]}
+          />
         </CardContent>
       </Card>
 

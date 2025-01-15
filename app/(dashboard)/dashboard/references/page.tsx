@@ -4,19 +4,21 @@ import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Plus, Upload, Download } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { AddReferenceDialog } from "@/components/dashboard/references/add-reference-dialog";
 import { ReferencesTable } from "@/components/dashboard/references/references-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Reference } from "@/types/reference";
 
 export default function ReferencesPage() {
   const { data: session } = useSession();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { data: references, isLoading } = useQuery({
+  const { data: references = [], isLoading } = useQuery<Reference[]>({
     queryKey: ["references"],
     queryFn: () => apiClient("/references", session),
+    enabled: !!session,
   });
 
   if (isLoading) return <ReferencesPageSkeleton />;
@@ -33,7 +35,7 @@ export default function ReferencesPage() {
         </div>
       </div>
 
-      <ReferencesTable references={references || []} />
+      <ReferencesTable references={references} />
 
       <AddReferenceDialog
         open={isAddDialogOpen}

@@ -31,7 +31,7 @@ export function AssetHistory({ history }: AssetHistoryProps) {
 
   return (
     <div className="space-y-4">
-      <Timeline items={getTimelineItems() as any} />
+      <Timeline items={getTimelineItems()} />
     </div>
   );
 }

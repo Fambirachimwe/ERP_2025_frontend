@@ -35,6 +35,7 @@ export default function ReferenceDetailPage() {
       toast.success("Reference deleted successfully");
       router.push("/dashboard/references");
     } catch (error) {
+      console.error("Error deleting reference:", error);
       toast.error("Failed to delete reference");
     }
   };
@@ -83,23 +84,30 @@ export default function ReferenceDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="font-medium">Reference Number:</span>
-              <span>{reference.referenceNumber}</span>
-            </div>
-            <div className="flex justify-between items-center">
               <span className="font-medium">Title:</span>
               <span>{reference.title}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="font-medium">Department:</span>
-              <span>{reference.department}</span>
+              <span className="font-medium">Description:</span>
+              <span>{reference.description}</span>
             </div>
-            {reference.projectNumber && (
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Project Number:</span>
-                <span>{reference.projectNumber}</span>
-              </div>
-            )}
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Uploaded By:</span>
+              <span>
+                {reference.uploadedBy.firstName} {reference.uploadedBy.lastName}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Document:</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(reference.fileUrl, "_blank")}
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View Document
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -108,12 +116,6 @@ export default function ReferenceDetailPage() {
             <CardTitle>Additional Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="font-medium">Created By:</span>
-              <span>
-                {reference.createdBy.firstName} {reference.createdBy.lastName}
-              </span>
-            </div>
             <div className="flex justify-between items-center">
               <span className="font-medium">Created:</span>
               <span>
@@ -127,7 +129,7 @@ export default function ReferenceDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(reference.documentUrl, "_blank")}
+                onClick={() => window.open(reference.fileUrl, "_blank")}
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
                 View Document

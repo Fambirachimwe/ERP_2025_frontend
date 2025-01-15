@@ -38,10 +38,6 @@ export function LeaveContextMenu({
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
-  const isAdmin = session?.user?.roles.some((role) =>
-    ["sysAdmin", "administrator"].includes(role)
-  );
-
   const deleteMutation = useMutation({
     mutationFn: () =>
       apiClient(`/leaves/${leave._id}`, session, {
@@ -67,6 +63,7 @@ export function LeaveContextMenu({
     try {
       await deleteMutation.mutateAsync();
     } catch (error) {
+      console.error("Error deleting leave:", error);
       toast.error("Failed to delete leave request");
     }
   };
@@ -75,6 +72,7 @@ export function LeaveContextMenu({
     try {
       await notifyMutation.mutateAsync();
     } catch (error) {
+      console.error("Error notifying supervisor:", error);
       toast.error("Failed to notify supervisor");
     }
   };

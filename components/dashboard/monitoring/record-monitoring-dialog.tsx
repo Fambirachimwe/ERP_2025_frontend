@@ -32,6 +32,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
+import { Asset } from "@/types/asset";
 
 const monitoringSchema = z.object({
   status: z.enum(["available", "in_use", "maintenance", "missing", "disposed"]),
@@ -45,9 +46,14 @@ const monitoringSchema = z.object({
 });
 
 interface RecordMonitoringDialogProps {
-  asset: any;
+  asset: Asset;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface ApiError {
+  message: string;
+  details?: unknown;
 }
 
 export function RecordMonitoringDialog({
@@ -85,8 +91,8 @@ export function RecordMonitoringDialog({
       onOpenChange(false);
       form.reset();
     },
-    onError: () => {
-      toast.error("Failed to record monitoring");
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Failed to record monitoring");
     },
   });
 

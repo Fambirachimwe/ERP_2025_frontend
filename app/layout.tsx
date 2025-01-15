@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import "./globals.css";
-import { Toaster, toast } from "sonner";
+import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });

@@ -12,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MonitoringTable } from "@/components/dashboard/monitoring/monitoring-table";
 import { MonitoringDashboard } from "@/components/dashboard/monitoring";
 import { AddMonitoringDialog } from "@/components/dashboard/monitoring/add-monitoring-dialog";
-import { MonitoringData } from "@/types/common";
 import { DashboardData, MonitoredAsset } from "@/types/monitoring";
 
 export default function MonitoringPage() {
@@ -45,7 +44,19 @@ export default function MonitoringPage() {
         </Button>
       </div>
 
-      <MonitoringDashboard data={stats} />
+      <MonitoringDashboard
+        data={
+          stats || {
+            dueForMonitoring: [],
+            assetsByStatus: [],
+            assetsWithIssues: [],
+            totalAssets: 0,
+            activeMonitoring: 0,
+            pendingService: 0,
+            issuesReported: 0,
+          }
+        }
+      />
 
       <Tabs defaultValue="due" className="space-y-4">
         <TabsList>

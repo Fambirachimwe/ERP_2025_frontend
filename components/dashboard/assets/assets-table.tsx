@@ -21,7 +21,6 @@ import {
   Car,
   Armchair,
   AppWindow,
-  Icon,
 } from "lucide-react";
 
 interface AssetsTableProps {

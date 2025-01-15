@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useLeaveBalance } from "@/lib/hooks/use-leave-balance";
 import { useAssignedAssets } from "@/lib/hooks/use-assigned-assets";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

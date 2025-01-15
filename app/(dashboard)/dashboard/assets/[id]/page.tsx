@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Pencil,
-  History,
   Users,
   PlusCircle,
   ArrowLeft,
@@ -161,15 +160,15 @@ export default function AssetDetailPage() {
                   <span className="font-medium">Serial Number:</span>
                   <span>{asset.serialNumber}</span>
                 </div>
-                {asset.type === "vehicle" && asset.vehicleDetails && (
+                {asset.type === "vehicle" && asset.licensePlateNumber && (
                   <>
                     <div className="flex justify-between">
                       <span className="font-medium">License Plate:</span>
-                      <span>{asset.vehicleDetails.licensePlate}</span>
+                      <span>{asset.licensePlateNumber}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium">Chassis Number:</span>
-                      <span>{asset.vehicleDetails.chassisNumber}</span>
+                      <span>{asset.vehicleDetails?.chassisNumber}</span>
                     </div>
                   </>
                 )}
@@ -309,10 +308,10 @@ export default function AssetDetailPage() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm">
-                            {format(new Date(record.date), "PPP")}
+                            {format(new Date(record?.date || ""), "PPP")}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {format(new Date(record.date), "pp")}
+                            {format(new Date(record?.date || ""), "pp")}
                           </p>
                         </div>
                       </div>
@@ -354,13 +353,13 @@ export default function AssetDetailPage() {
                 {asset?.serviceHistory?.map((service) => (
                   <TableRow key={service._id}>
                     <TableCell>
-                      {format(new Date(service.serviceDate), "PPP")}
+                      {format(new Date(service.serviceDate || ""), "PPP")}
                     </TableCell>
                     <TableCell>{service.serviceProvider}</TableCell>
                     <TableCell>{service.serviceDetails}</TableCell>
                     <TableCell>${service.cost}</TableCell>
                     <TableCell>
-                      {format(new Date(service.nextServiceDue), "PPP")}
+                      {format(new Date(service.nextServiceDue || ""), "PPP")}
                     </TableCell>
                   </TableRow>
                 ))}

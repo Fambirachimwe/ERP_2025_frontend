@@ -20,11 +20,11 @@ export function SignaturePadComponent({
 
   // Update parent component whenever signature changes
   const handleSignatureChange = () => {
-    if (signaturePadRef.current?.isEmpty?.()) {
+    if (signaturePadRef.current?.isEmpty()) {
       onSignatureComplete("");
     } else {
       const signatureDataUrl = signaturePadRef.current?.toDataURL();
-      signatureDataUrl && onSignatureComplete(signatureDataUrl);
+      if (signatureDataUrl) onSignatureComplete(signatureDataUrl);
     }
   };
 

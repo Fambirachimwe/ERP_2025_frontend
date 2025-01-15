@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useSession } from "next-auth/react";
-import { Leave } from "@/types/leave";
 import { toast } from "sonner";
 
 export function useLeave(id: string) {

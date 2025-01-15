@@ -39,7 +39,6 @@ export function ApproveLeaveDialog({
   const isAdmin = session?.user?.roles?.some((role) =>
     ["sysAdmin", "administrator"].includes(role)
   );
-  const isSupervisor = session?.user?.id === leave?.supervisorId._id;
 
   const handleApprove = async () => {
     if (!signature) return;

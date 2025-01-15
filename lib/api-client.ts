@@ -1,6 +1,4 @@
 import { Session } from "next-auth";
-import { handleApiError } from "@/lib/utils/handle-error";
-
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 interface ApiError {

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 interface ApiError {
     message?: string;
     status?: number;
-    details?: any;
+    details?: unknown;
 }
 
 export function handleApiError(error: ApiError, fallbackMessage = "An error occurred") {

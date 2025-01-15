@@ -23,6 +23,11 @@ interface DisapproveLeaveDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface ApiError {
+  message: string;
+  details?: unknown;
+}
+
 export function DisapproveLeaveDialog({
   leave,
   open,
@@ -89,14 +94,8 @@ export function DisapproveLeaveDialog({
       toast.success("Leave request rejected successfully");
       onOpenChange(false);
     },
-    onError: (error: any) => {
-      console.error("Full rejection error:", {
-        error,
-        message: error.message,
-        status: error.status,
-        response: error.response,
-      });
-      toast.error(error.message || "Failed to reject leave request");
+    onError: (error: ApiError) => {
+      toast.error(error.message || "Failed to reject leave");
     },
   });
 
@@ -123,7 +122,7 @@ export function DisapproveLeaveDialog({
           </p>
         ) : !canDisapprove ? (
           <p className="text-sm text-muted-foreground">
-            You don't have permission to reject this leave request.
+            You dont have permission to reject this leave request.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
