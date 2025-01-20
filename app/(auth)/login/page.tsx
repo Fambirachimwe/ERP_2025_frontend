@@ -33,22 +33,24 @@ export default function LoginPage() {
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
 
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: formData.get("email"),
+        password: formData.get("password"),
         redirect: false,
+        callbackUrl: callbackUrl,
       });
 
       if (result?.error) {
+        console.error("Login error:", result.error);
         setError({ message: "Invalid email or password" });
         return;
       }
 
-      router.push(callbackUrl);
+      if (result?.url) {
+        router.push(result.url);
+      }
     } catch (error) {
       console.error("Login error:", error);
       setError({ message: "An error occurred. Please try again." });

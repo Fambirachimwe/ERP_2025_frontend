@@ -1,99 +1,72 @@
-import { NextAuthConfig, Session } from "next-auth";
-import type { JWT } from "next-auth/jwt";
+import type { NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-declare module "next-auth" {
-    interface User {
-        _id: string;
-        firstName: string;
-        lastName: string;
-        department: string;
-        roles: string[];
-        accessToken: string;
-    }
-
-    interface Session {
-        user: User & {
-            id: string;
-            email: string;
-            name?: string | null;
-            image?: string | null;
-        };
-    }
-}
-
 export const authConfig: NextAuthConfig = {
-    pages: {
-        signIn: "/login",
-    },
     providers: [
         Credentials({
             credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" },
+                email: {},
+                password: {},
             },
-            async authorize(credentials) {
-                console.log("Credentials:", credentials);
+            authorize: async (credentials) => {
                 try {
                     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
                         body: JSON.stringify(credentials),
                     });
 
                     const data = await response.json();
 
+                    console.log(data);
+
                     if (!response.ok) {
-                        throw new Error(data.message || "Invalid credentials");
+                        return null;
                     }
 
                     return {
                         id: data.user._id,
-                        _id: data.user._id,
                         email: data.user.email,
-                        name: `${data.user.firstName} ${data.user.lastName}`,
                         firstName: data.user.firstName,
                         lastName: data.user.lastName,
                         department: data.user.department,
+                        name: `${data.user.firstName} ${data.user.lastName}`,
                         roles: data.user.roles,
-                        accessToken: data.token,
+                        accessToken: data.token
                     };
-                } catch (error: any) {
-                    console.error("Auth Error:", error);
+                } catch (error) {
                     return null;
                 }
-            },
-        }),
+            }
+        })
     ],
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                return {
-                    ...token,
-                    _id: user._id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    department: user.department,
-                    roles: user.roles,
-                    accessToken: user.accessToken,
-                };
+                token.id = user.id;
+                token.email = user.email;
+                token.name = user.name;
+                token.roles = user.roles;
+                token.accessToken = user.accessToken;
             }
             return token;
         },
-        async session({ session, token }): Promise<Session> {
-            return {
-                ...session,
-                user: {
-                    ...session.user,
-                    _id: token._id as string,
-                    firstName: token.firstName as string,
-                    lastName: token.lastName as string,
-                    department: token.department as string,
-                    roles: token.roles as string[],
-                    accessToken: token.accessToken as string,
-                },
-            };
-        },
+        async session({ session, token }) {
+            if (token) {
+                session.user.id = token.id as string;
+                session.user.email = token.email as string;
+                session.user.name = token.name as string;
+                session.user.roles = token.roles as string[];
+                session.user.accessToken = token.accessToken as string;
+            }
+            return session;
+        }
     },
-    session: { strategy: "jwt" },
+    pages: {
+        signIn: '/login',
+    },
+    debug: process.env.NODE_ENV === 'development',
+    session: { strategy: "jwt" }
 };

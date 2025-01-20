@@ -42,7 +42,7 @@ export function MainNav() {
     },
     {
       title: "Settings",
-      href: "/dashboard/settings",
+      href: "#",
       show: true, // Always show settings
     },
   ];

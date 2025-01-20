@@ -55,7 +55,7 @@ const assetSchema = z
     // Vehicle specific fields
     vehicleDetails: z
       .object({
-        licensePlate: z.string(),
+        licensePlateNumber: z.string(),
         chassisNumber: z.string(),
       })
       .optional(),
@@ -68,7 +68,7 @@ const assetSchema = z
     (data) => {
       if (data.type === "vehicle") {
         return (
-          !!data.vehicleDetails?.licensePlate &&
+          !!data.vehicleDetails?.licensePlateNumber &&
           !!data.vehicleDetails?.chassisNumber
         );
       }
@@ -85,7 +85,7 @@ interface AddAssetDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type AssetFormValues = z.infer<typeof assetSchema>;
+// type AssetFormValues = z.infer<typeof assetSchema>;
 
 interface AssetError {
   message: string;
@@ -97,21 +97,18 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<AssetFormValues>({
+  const form = useForm<z.infer<typeof assetSchema>>({
     resolver: zodResolver(assetSchema),
     defaultValues: {
-      type: "laptop" as const,
+      type: "laptop",
       model: "",
       manufacturer: "",
       serialNumber: "",
       location: "",
       department: "",
       price: 0,
-      purchaseDate: "",
+      // status: "available",
       warrantyExpiry: "",
-      licenseKey: "",
-      version: "",
-      expirationDate: "",
     },
   });
 
@@ -136,6 +133,7 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
   });
 
   const onSubmit = async (values: z.infer<typeof assetSchema>) => {
+    console.log(values);
     setIsLoading(true);
     try {
       await mutation.mutateAsync(values);
@@ -311,7 +309,7 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="vehicleDetails.licensePlate"
+                    name="vehicleDetails.licensePlateNumber"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>License Plate</FormLabel>

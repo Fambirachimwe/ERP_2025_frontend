@@ -16,11 +16,13 @@ export async function apiClient<T>(
         throw new Error('Authentication required');
     }
 
+    console.log(session);
+
     try {
         const url = `${API_URL}${endpoint}`;
         const headers = {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${session.user.accessToken}`,
+            "Authorization": `Bearer ${session.user.accessToken}`,
             ...options.headers,
         };
 
@@ -31,6 +33,7 @@ export async function apiClient<T>(
         });
 
         const data = await response.json();
+        console.log(data);
 
         if (!response.ok) {
             throw {

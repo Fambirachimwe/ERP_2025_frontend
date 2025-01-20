@@ -27,7 +27,7 @@ export interface Asset {
         chassisNumber: string;
     };
     // Service history
-    serviceHistory?: AssetHistory[];
+    serviceHistory?: ServiceHistory[];
     // Tracking
     tracking?: {
         lastScannedBy?: string;
@@ -40,22 +40,20 @@ export interface Asset {
 
 export interface AssetHistory {
     _id: string;
-    action: "assigned" | "unassigned" | "service";
-    date: string;
-    assignedTo?: {
+    asset: string;
+    assignedTo: {
         _id: string;
         firstName: string;
         lastName: string;
         email: string;
     };
-    serviceDetails?: {
-        serviceProvider: string;
-        serviceType: string;
-        description: string;
-        cost: number;
-        nextServiceDue: string;
-        status: 'scheduled' | 'completed' | 'cancelled';
+    action: 'assigned' | 'unassigned';
+    actionBy: {
+        _id: string;
+        firstName: string;
+        lastName: string;
     };
+    date: string;
     note?: string;
 }
 
@@ -75,5 +73,27 @@ export interface AssetFormValues {
     vehicleDetails?: {
         licensePlateNumber: string;
         chassisNumber: string;
+    };
+}
+
+export interface ServiceHistory {
+    _id: string;
+    serviceDate: string;
+    serviceProvider: string;
+    serviceDetails: string;
+    cost: number;
+    nextServiceDue: string;
+    status: 'scheduled' | 'completed' | 'cancelled';
+}
+
+export interface AssetStats {
+    total: number;
+    totalAssets: number;
+    softwareAssets: number;
+    active: number;
+    maintenance: number;
+    disposed: number;
+    byType: {
+        [key: string]: number;
     };
 } 

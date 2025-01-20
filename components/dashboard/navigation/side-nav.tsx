@@ -64,7 +64,7 @@ export function SideNav() {
     },
     {
       title: "Settings",
-      href: "/dashboard/settings",
+      href: "#",
       icon: Settings,
       show: true,
     },

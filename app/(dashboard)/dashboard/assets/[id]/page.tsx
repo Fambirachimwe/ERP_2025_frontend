@@ -15,12 +15,13 @@ import {
   ArrowLeft,
   Plus,
   UserMinus,
+  Trash2,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { EditAssetDialog } from "@/components/dashboard/assets/edit-asset-dialog";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Asset, AssetHistory } from "@/types/asset";
+import { Asset, AssetHistory, ServiceHistory } from "@/types/asset";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AssignAssetDialog } from "@/components/dashboard/assets/assign-asset-dialog";
 import { AddServiceHistoryDialog } from "@/components/dashboard/assets/add-service-history-dialog";
@@ -51,6 +52,7 @@ export default function AssetDetailPage() {
   const [isServiceHistoryDialogOpen, setIsServiceHistoryDialogOpen] =
     useState(false);
   const [isUnassignDialogOpen, setIsUnassignDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -65,6 +67,12 @@ export default function AssetDetailPage() {
   >({
     queryKey: ["asset-history", id],
     queryFn: () => apiClient(`/assets/${id}/history`, session),
+    enabled: status === "authenticated",
+  });
+
+  const { data: serviceHistory } = useQuery<ServiceHistory[]>({
+    queryKey: ["asset-service-history", id],
+    queryFn: () => apiClient(`/assets/${id}/service-history`, session),
     enabled: status === "authenticated",
   });
 
@@ -85,7 +93,7 @@ export default function AssetDetailPage() {
       toast.success("Asset unassigned successfully");
       setIsUnassignDialogOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error unassigning asset:", error);
       toast.error("Failed to unassign asset");
     },
@@ -95,12 +103,34 @@ export default function AssetDetailPage() {
     unassignMutation.mutate();
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      apiClient(`/assets/${id}`, session, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      toast.success("Asset deleted successfully");
+      router.push("/dashboard/assets");
+    },
+    onError: (error: any) => {
+      console.log(error);
+      toast.error("Failed to delete asset");
+    },
+  });
+
+  const handleDelete = () => {
+    deleteMutation.mutate();
+  };
+
   if (isLoading) return <AssetDetailSkeleton />;
   if (!asset) return <div>Asset not found</div>;
 
   const isAdmin = session?.user?.roles?.some(
     (role) => role === "sysAdmin" || role === "administrator"
   );
+
+  console.log(asset.vehicleDetails?.licensePlateNumber);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -117,10 +147,20 @@ export default function AssetDetailPage() {
           <h2 className="text-3xl font-bold tracking-tight">Asset Details</h2>
         </div>
         {isAdmin && (
-          <Button onClick={() => setIsEditDialogOpen(true)}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Edit Asset
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Button onClick={() => setIsEditDialogOpen(true)}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Asset
+            </Button>
+
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Asset
+            </Button>
+          </div>
         )}
       </div>
 
@@ -165,7 +205,7 @@ export default function AssetDetailPage() {
                     <>
                       <div className="flex justify-between">
                         <span className="font-medium">License Plate:</span>
-                        <span>{asset.vehicleDetails.licensePlateNumber}</span>
+                        <span>{asset.vehicleDetails?.licensePlateNumber}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium">Chassis Number:</span>
@@ -185,7 +225,7 @@ export default function AssetDetailPage() {
                   <span className="font-medium">Status:</span>
                   <Badge
                     variant={
-                      asset.status === "active" ? "default" : "destructive"
+                      asset.status === "available" ? "default" : "destructive"
                     }
                   >
                     {asset.status}
@@ -291,7 +331,7 @@ export default function AssetDetailPage() {
                           </div>
                           <div>
                             <p className="text-sm font-medium">
-                              {record.type === "assigned"
+                              {record.action === "assigned"
                                 ? "Assigned to"
                                 : "Unassigned from"}
                             </p>
@@ -448,6 +488,29 @@ export default function AssetDetailPage() {
               disabled={unassignMutation.isPending}
             >
               {unassignMutation.isPending ? "Unassigning..." : "Unassign"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Asset</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this asset? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -12,6 +12,17 @@ declare module "next-auth" {
             email: string;
         };
     }
+
+    interface User {
+        id: string;
+        email: string;
+        name: string;
+        firstName: string;
+        lastName: string;
+        roles: string[];
+        department: string;
+        accessToken: string;
+    }
 }
 
 declare module "next-auth/jwt" {
@@ -19,5 +30,6 @@ declare module "next-auth/jwt" {
         _id: string;
         roles: string[];
         accessToken: string;
+        department: string;
     }
 } 
