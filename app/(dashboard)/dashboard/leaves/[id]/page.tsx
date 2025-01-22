@@ -23,6 +23,8 @@ export default function LeavePage() {
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isDisapproveDialogOpen, setIsDisapproveDialogOpen] = useState(false);
 
+  console.log(isApproveDialogOpen);
+
   const { data: leave, isLoading } = useQuery<Leave>({
     queryKey: ["leave", params.id],
     queryFn: () => apiClient(`/leaves/${params.id}`, session),
@@ -33,15 +35,17 @@ export default function LeavePage() {
     return <LeaveDetailSkeleton />;
   }
 
-  const isSupervisor = session?.user?._id === leave.supervisorId._id;
+  // console.log("leave", leave);
+
+  const isSupervisor = session?.user?.id === leave.supervisorId._id;
   const isAdmin = session?.user?.roles?.some((role: string) =>
     ["administrator", "sysAdmin", "admin"].includes(role.toLowerCase())
   );
 
-  console.log("User roles:", session?.user?.roles);
-  console.log("Leave status:", leave.status);
-  console.log("Is Admin:", isAdmin);
-  console.log("Is Supervisor:", isSupervisor);
+  // console.log("User roles:", session?.user?.roles);
+  // console.log("Leave status:", leave.status);
+  // console.log("Is Admin:", isAdmin);
+  // console.log("Is Supervisor:", isSupervisor);
 
   // const canApprove =
   //   (isAdmin || isSupervisor) &&
@@ -54,6 +58,8 @@ export default function LeavePage() {
 
   // For supervisor: show buttons only if leave is pending
   const showSupervisorActions = isSupervisor && leave.status === "pending";
+
+  // console.log("showSupervisorActions", showSupervisorActions);
 
   // For admin: show buttons only if leave is supervisor_approved
   const showAdminActions = isAdmin && leave.status === "supervisor_approved";
@@ -86,6 +92,13 @@ export default function LeavePage() {
               <p className="font-medium">Department</p>
               <p className="text-sm text-muted-foreground">
                 {leave.employeeId.department}
+              </p>
+            </div>
+
+            <div>
+              <p className="font-medium">Supervisor</p>
+              <p className="text-sm text-muted-foreground">
+                {leave.supervisorId.firstName} {leave.supervisorId.lastName}
               </p>
             </div>
           </CardContent>
@@ -145,7 +158,11 @@ export default function LeavePage() {
         <div className="flex justify-end space-x-4">
           {showSupervisorActions && (
             <>
-              <Button onClick={() => setIsApproveDialogOpen(true)}>
+              <Button
+                onClick={() => {
+                  setIsApproveDialogOpen(true);
+                }}
+              >
                 Approve Leave
               </Button>
               <Button
@@ -159,7 +176,12 @@ export default function LeavePage() {
 
           {showAdminActions && (
             <>
-              <Button onClick={() => setIsApproveDialogOpen(true)}>
+              <Button
+                onClick={() => {
+                  setIsApproveDialogOpen(true);
+                  console.log("Approve Leave");
+                }}
+              >
                 Approve Leave
               </Button>
               <Button

@@ -40,7 +40,7 @@ export function DisapproveLeaveDialog({
   const [comments, setComments] = useState("");
 
   const isSupervisor =
-    session?.user?._id === leave?.supervisorId._id &&
+    session?.user?.id === leave?.supervisorId._id &&
     session?.user?.roles.includes("supervisor");
 
   const isAdmin = session?.user?.roles.some((role) =>
@@ -139,9 +139,8 @@ export function DisapproveLeaveDialog({
             <div className="space-y-2">
               <Label>Signature</Label>
               <SignaturePadComponent
-                onSignatureComplete={(signatureData) =>
-                  setSignature(signatureData)
-                }
+                onSave={setSignature}
+                existingSignature={signature}
               />
             </div>
 

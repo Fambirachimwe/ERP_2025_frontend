@@ -22,16 +22,12 @@ export interface Leave {
         supervisorApproval: {
             status: 'pending' | 'approved' | 'rejected';
             signature?: string;
-            signatureDate?: string;
             comments?: string;
         };
         adminApproval: {
             status: 'pending' | 'approved' | 'rejected';
             signature?: string;
-            signatureDate?: string;
             comments?: string;
-            adminId?: string;
-            approvalDate?: string;
         };
     };
     createdAt: string;

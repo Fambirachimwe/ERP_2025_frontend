@@ -18,13 +18,17 @@ export function LeavesTabs({ leaves, userLeaves }: LeavesTabsProps) {
   );
   const isSupervisor = session?.user?.roles.includes("supervisor");
 
+  // console.log("isSupervisor", isSupervisor);
+  // console.log("session", session);
+
   // Filter leaves that need the current user's approval
   const pendingApproval = leaves.filter((leave) => {
-    const currentUserId = session?.user?._id;
+    const currentUserId = session?.user?.id;
+
     if (!currentUserId) return false;
 
     // For supervisors: show leaves where they are the supervisor and status is pending
-    if (isSupervisor && leave?.supervisorId?._id === currentUserId) {
+    if (isSupervisor && leave?.supervisorId === currentUserId) {
       return (
         leave.status === "pending" &&
         leave.approvalFlow.supervisorApproval.status === "pending"

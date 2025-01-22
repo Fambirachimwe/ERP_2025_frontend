@@ -34,10 +34,18 @@ export function ApproveLeaveDialog({
   const [comments, setComments] = useState("");
   const [signature, setSignature] = useState<string>("");
 
-  const isSupervisor = session?.user?._id === leave?.supervisorId._id;
+  const isSupervisor = session?.user?.id === leave?.supervisorId._id;
   const isAdmin = session?.user?.roles?.some((role) =>
     ["administrator", "sysAdmin"].includes(role)
   );
+
+  // Determine approval type
+  let approvalType = "";
+  if (isSupervisor && leave?.status === "pending") {
+    approvalType = "supervisor";
+  } else if (isAdmin && leave?.status === "supervisor_approved") {
+    approvalType = "admin";
+  }
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -47,16 +55,17 @@ export function ApproveLeaveDialog({
         status: "approved",
         comments,
         signature,
-        approvalType: isSupervisor ? "supervisor" : "admin",
+        approvalType,
       };
 
-      return await apiClient(`/leaves/${leave._id}/status`, session, {
+      return await apiClient(`/leaves/${leave._id}/approve`, session, {
         method: "POST",
         body: JSON.stringify(approvalData),
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["leaves"] });
+      queryClient.invalidateQueries({ queryKey: ["leave", leave?._id] });
       onOpenChange(false);
       setComments("");
       setSignature("");
@@ -71,60 +80,58 @@ export function ApproveLeaveDialog({
     },
   });
 
-  // Check if admin can approve (supervisor must have approved first)
-  // const canAdminApprove = isAdmin && leave?.status === "supervisor_approved";
-
-  // Prevent admin from approving if supervisor hasn't approved yet
-  if (isAdmin && leave?.status !== "supervisor_approved") {
+  // Only render if user has permission to approve
+  if (!approvalType) {
     return null;
   }
-
-  const handleApprove = () => {
-    if (!comments || !signature) {
-      toast.error("Please provide both comments and signature");
-      return;
-    }
-    mutation.mutate();
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {isSupervisor ? "Supervisor Approval" : "Admin Approval"}
-          </DialogTitle>
+          <DialogTitle>Approve Leave Request</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Comments</Label>
-            <Textarea
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              placeholder="Add your comments (required)"
-              required
-            />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!signature) {
+              toast.error("Please provide your signature");
+              return;
+            }
+            mutation.mutate();
+          }}
+        >
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="comments">Comments</Label>
+              <Textarea
+                id="comments"
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                placeholder="Add any comments..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Signature</Label>
+              <SignaturePadComponent
+                onSave={setSignature}
+                existingSignature={signature}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Signature</Label>
-            <SignaturePadComponent onSignatureComplete={setSignature} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={mutation.isPending}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleApprove}
-            disabled={!comments || !signature || mutation.isPending}
-          >
-            {mutation.isPending ? "Approving..." : "Approve"}
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="mt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? "Approving..." : "Approve"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

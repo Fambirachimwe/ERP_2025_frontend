@@ -35,7 +35,7 @@ interface LeavesTableProps {
 export function LeavesTable({ leaves }: LeavesTableProps) {
   const router = useRouter();
 
-  console.log("from the leaves table", leaves);
+  // console.log("from the leaves table", leaves);
 
   const handleRowClick = (leaveId: string) => {
     router.push(`/dashboard/leaves/${leaveId}`);
