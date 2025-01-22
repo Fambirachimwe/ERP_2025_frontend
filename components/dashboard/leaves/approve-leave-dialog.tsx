@@ -114,7 +114,7 @@ export function ApproveLeaveDialog({
             <div className="space-y-2">
               <Label>Signature</Label>
               <SignaturePadComponent
-                onSave={setSignature}
+                onSave={(signatureData: string) => setSignature(signatureData)}
                 existingSignature={signature}
               />
             </div>

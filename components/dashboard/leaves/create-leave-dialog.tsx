@@ -264,9 +264,7 @@ export function CreateLeaveDialog({
             <div>
               <FormLabel>Signature</FormLabel>
               <SignaturePadComponent
-                onSignatureComplete={(signatureData) =>
-                  setSignature(signatureData)
-                }
+                onSave={(signatureData) => setSignature(signatureData)}
               />
             </div>
 

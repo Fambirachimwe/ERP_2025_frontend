@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import SignaturePad from "signature_pad";
+import { useRef, useCallback } from "react";
+import SignaturePad from "react-signature-canvas";
 import { Button } from "@/components/ui/button";
 
 interface SignaturePadComponentProps {
@@ -13,61 +13,47 @@ export function SignaturePadComponent({
   onSave,
   existingSignature,
 }: SignaturePadComponentProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const signaturePadRef = useRef<SignaturePad | null>(null);
+  const signaturePadRef = useRef<SignaturePad>(null);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      signaturePadRef.current = new SignaturePad(canvasRef.current);
-
-      // If there's an existing signature, display it
-      if (existingSignature) {
-        const image = new Image();
-        image.onload = () => {
-          const canvas = canvasRef.current;
-          if (canvas) {
-            const ctx = canvas.getContext("2d");
-            ctx?.drawImage(image, 0, 0);
-          }
-        };
-        image.src = existingSignature;
-      }
+  // Update parent component whenever signature changes
+  const handleSignatureChange = useCallback(() => {
+    if (!signaturePadRef.current) return;
+    if (!onSave || typeof onSave !== "function") {
+      console.error("onSave prop is not a function");
+      return;
     }
 
-    return () => {
-      if (signaturePadRef.current) {
-        signaturePadRef.current.off();
-      }
-    };
-  }, [existingSignature]);
-
-  const handleSave = () => {
-    if (signaturePadRef.current?.isEmpty()) {
-      alert("Please provide a signature");
-    } else {
-      const signatureDataUrl = signaturePadRef.current?.toDataURL();
-      if (signatureDataUrl) onSave(signatureDataUrl);
+    if (signaturePadRef.current.isEmpty()) {
+      onSave("");
+      return;
     }
-  };
 
-  const handleClear = () => {
-    signaturePadRef.current?.clear();
-  };
+    const signatureDataUrl = signaturePadRef.current.toDataURL();
+    onSave(signatureDataUrl);
+  }, [onSave]);
+
+  const handleClear = useCallback(() => {
+    if (!signaturePadRef.current) return;
+    if (!onSave || typeof onSave !== "function") return;
+
+    signaturePadRef.current.clear();
+    onSave("");
+  }, [onSave]);
 
   return (
     <div className="space-y-2">
-      <div className="border rounded-md p-2">
-        <canvas
-          ref={canvasRef}
-          className="signature-pad w-full h-40 border rounded-md touch-none"
+      <div className="border rounded-lg p-4">
+        <SignaturePad
+          ref={signaturePadRef}
+          onEnd={handleSignatureChange}
+          canvasProps={{
+            className: "signature-pad w-full h-40 border rounded",
+          }}
         />
       </div>
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={handleClear}>
-          Clear
-        </Button>
-        <Button type="button" onClick={handleSave}>
-          Save Signature
+      <div className="flex justify-end">
+        <Button onClick={handleClear} variant="outline" type="button" size="sm">
+          Clear Signature
         </Button>
       </div>
     </div>
