@@ -13,6 +13,7 @@ import {
   Settings,
   Users,
   Calendar,
+  WrenchIcon,
 } from "lucide-react";
 
 export function SideNav() {
@@ -55,6 +56,12 @@ export function SideNav() {
       href: "/dashboard/leaves",
       icon: Calendar,
       show: true,
+    },
+    {
+      title: "Service Log",
+      href: "/dashboard/service-log",
+      icon: WrenchIcon,
+      show: isAdmin,
     },
     {
       title: "Users",

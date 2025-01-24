@@ -21,6 +21,8 @@ import {
   Car,
   Armchair,
   AppWindow,
+  Printer,
+  FileText,
 } from "lucide-react";
 
 interface AssetsTableProps {
@@ -36,6 +38,8 @@ const assetTypeIcons: Record<string, React.ElementType> = {
   vehicle: Car,
   furniture: Armchair,
   software: AppWindow,
+  printer: Printer,
+  other: FileText,
 };
 
 export function AssetsTable({ assets }: AssetsTableProps) {
@@ -85,13 +89,13 @@ export function AssetsTable({ assets }: AssetsTableProps) {
             >
               <TableCell className="font-medium">{asset.assetId}</TableCell>
               <TableCell>{asset.model}</TableCell>
-              <TableCell>{getAssetIcon(asset.type)}</TableCell>
+              <TableCell>{getAssetIcon(asset.assetType)}</TableCell>
               <TableCell>{asset.location}</TableCell>
               <TableCell>{asset.department}</TableCell>
               <TableCell>
                 <Badge
                   variant={
-                    asset.status === "active" ? "default" : "destructive"
+                    asset.status === "available" ? "default" : "destructive"
                   }
                 >
                   {asset.status}

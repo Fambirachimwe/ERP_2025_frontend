@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
-import { Asset } from "@/types/asset";
+import { Asset, AssetType } from "@/types/asset";
 import {
   Dialog,
   DialogContent,
@@ -34,14 +34,20 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { handleApiError } from "@/lib/utils/handle-error";
 
+// Replace ASSET_TYPES array with Object.values(AssetType)
+const assetTypes = Object.values(AssetType);
+
 const assetSchema = z.object({
+  assetType: z.nativeEnum(AssetType, {
+    required_error: "Asset type is required",
+  }),
   model: z.string().min(1, "Model is required"),
   manufacturer: z.string().min(1, "Manufacturer is required"),
   serialNumber: z.string().min(1, "Serial number is required"),
-  location: z.string().min(1, "Location is required"),
-  department: z.string().min(1, "Department is required"),
-  status: z.string().min(1, "Status is required"),
-  price: z.number().optional(),
+  location: z.string().min(1, "Location is required").optional(),
+  department: z.string().min(1, "Department is required").optional(),
+  status: z.string().min(1, "Status is required").optional(),
+  price: z.number().min(1, "Price is required").optional(),
   purchaseDate: z.string().optional(),
   warrantyExpiry: z.string().optional(),
   licenseKey: z.string().optional(),
@@ -73,11 +79,12 @@ export function EditAssetDialog({
   const form = useForm<z.infer<typeof assetSchema>>({
     resolver: zodResolver(assetSchema),
     defaultValues: {
+      assetType: asset.assetType as AssetType,
       model: asset.model,
       manufacturer: asset.manufacturer,
       serialNumber: asset.serialNumber,
-      location: asset.location,
-      department: asset.department,
+      location: asset.location || "",
+      department: asset.department || "",
       status: asset.status,
       price: asset.price || undefined,
       purchaseDate: asset.purchaseDate || "",
@@ -89,28 +96,34 @@ export function EditAssetDialog({
     },
   });
 
+  // console.log(form.getValues());
+
   const mutation = useMutation({
-    mutationFn: (values: z.infer<typeof assetSchema>) =>
-      apiClient(`/assets/${asset._id}`, session, {
+    mutationFn: (values: z.infer<typeof assetSchema>) => {
+      console.log("Submitting values:", values); // Debug log
+      return apiClient(`/assets/${asset._id}`, session, {
         method: "PUT",
         body: JSON.stringify(values),
-      }),
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["asset", asset._id] });
       toast.success("Asset updated successfully");
       onOpenChange(false);
     },
     onError: (error) => {
+      console.error("Mutation error:", error); // Debug log
       handleApiError(error, "Failed to update asset");
     },
   });
 
   const onSubmit = async (values: z.infer<typeof assetSchema>) => {
     setIsLoading(true);
+
+    console.log(values.assetType);
     try {
       const updatedValues = {
         ...values,
-        type: asset.type,
         assetId: asset.assetId,
         assignedTo: asset.assignedTo,
         serviceHistory: asset.serviceHistory,
@@ -122,7 +135,7 @@ export function EditAssetDialog({
     }
   };
 
-  const isSoftware = asset.type === "software";
+  const isSoftware = asset.assetType === AssetType.Software;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -133,6 +146,34 @@ export function EditAssetDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="assetType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Asset Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select asset type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {assetTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="model"
@@ -219,8 +260,10 @@ export function EditAssetDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="in_use">In Use</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                        <SelectItem value="missing">Missing</SelectItem>
                         <SelectItem value="disposed">Disposed</SelectItem>
                       </SelectContent>
                     </Select>

@@ -16,7 +16,7 @@ export async function apiClient<T>(
         throw new Error('Authentication required');
     }
 
-    console.log(session);
+    // console.log(session);
 
     try {
         const url = `${API_URL}${endpoint}`;
@@ -33,7 +33,7 @@ export async function apiClient<T>(
         });
 
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
 
         if (!response.ok) {
             throw {

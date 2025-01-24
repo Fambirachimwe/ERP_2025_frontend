@@ -31,10 +31,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
+import { AssetType } from "@/types/asset";
 
 const assetSchema = z
   .object({
-    type: z.enum([
+    assetType: z.enum([
       "laptop",
       "monitor",
       "cpu",
@@ -66,7 +67,7 @@ const assetSchema = z
   })
   .refine(
     (data) => {
-      if (data.type === "vehicle") {
+      if (data.assetType === AssetType.Vehicle) {
         return (
           !!data.vehicleDetails?.licensePlateNumber &&
           !!data.vehicleDetails?.chassisNumber
@@ -100,7 +101,7 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
   const form = useForm<z.infer<typeof assetSchema>>({
     resolver: zodResolver(assetSchema),
     defaultValues: {
-      type: "laptop",
+      assetType: AssetType.Laptop,
       model: "",
       manufacturer: "",
       serialNumber: "",
@@ -145,9 +146,9 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
     }
   };
 
-  const assetType = form.watch("type");
-  const isVehicle = assetType === "vehicle";
-  const isSoftware = assetType === "software";
+  const assetType = form.watch("assetType");
+  const isVehicle = assetType === AssetType.Vehicle;
+  const isSoftware = assetType === AssetType.Software;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -160,7 +161,7 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="type"
+                name="assetType"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Asset Type</FormLabel>
@@ -182,6 +183,8 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
                         <SelectItem value="vehicle">Vehicle</SelectItem>
                         <SelectItem value="furniture">Furniture</SelectItem>
                         <SelectItem value="software">Software</SelectItem>
+                        <SelectItem value="printer">Printer</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

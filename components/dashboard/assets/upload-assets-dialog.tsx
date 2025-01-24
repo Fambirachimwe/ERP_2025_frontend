@@ -10,8 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface UploadAssetsDialogProps {
   open: boolean;
@@ -23,39 +24,55 @@ export function UploadAssetsDialog({
   onOpenChange,
 }: UploadAssetsDialogProps) {
   const { data: session } = useSession();
+
   const queryClient = useQueryClient();
-  const [isLoading, setIsLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const mutation = useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async () => {
+      if (!file) return;
+
       const formData = new FormData();
       formData.append("file", file);
-      return apiClient("/assets/upload", session, {
-        method: "POST",
-        body: formData,
-        headers: {},
-      });
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/assets/upload`,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${session?.user?.accessToken}`,
+          },
+          // Don't set Content-Type - let the browser set it with boundary
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Upload failed");
+      }
+
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["assets"] });
-      toast.success("Assets uploaded successfully");
       onOpenChange(false);
+      setFile(null);
+      toast.success("Assets uploaded successfully");
     },
-    onError: (error) => {
-      toast.error("Failed to upload assets");
-      console.error("Upload error:", error);
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to upload assets");
     },
   });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsLoading(true);
-    try {
-      await mutation.mutateAsync(file);
-    } finally {
-      setIsLoading(false);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      if (selectedFile.type !== "text/csv") {
+        toast.error("Please upload a CSV file");
+        return;
+      }
+      setFile(selectedFile);
     }
   };
 
@@ -70,11 +87,26 @@ export function UploadAssetsDialog({
             type="file"
             accept=".csv,.xlsx,.xls"
             onChange={handleFileChange}
-            disabled={isLoading}
           />
-          <p className="text-sm text-muted-foreground">
-            Upload a CSV or Excel file containing asset data
-          </p>
+          <div className="text-sm text-muted-foreground">
+            <p>Please upload a CSV file with the following columns:</p>
+            <p>
+              model, manufacturer, serialNumber, purchaseDate,
+              warrantyExpiryDate, status, category, location, assignedTo,
+              department, description, value
+            </p>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => mutation.mutate()}
+              disabled={!file || mutation.isPending}
+            >
+              {mutation.isPending ? "Uploading..." : "Upload"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

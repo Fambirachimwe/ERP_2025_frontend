@@ -1,7 +1,29 @@
+export enum AssetType {
+    Laptop = 'laptop',
+    Monitor = 'monitor',
+    CPU = 'cpu',
+    Mouse = 'mouse',
+    HardDrive = 'hardDrive',
+    Vehicle = 'vehicle',
+    Furniture = 'furniture',
+    Software = 'software',
+    Printer = 'printer',
+    Other = 'other',
+    Phone = 'phone',
+    Tablet = 'tablet',
+    Camera = 'camera',
+    Keyboard = 'keyboard',
+    Mousepad = 'mousepad',
+    Webcam = 'webcam',
+    Microphone = 'microphone',
+    Speaker = 'speaker',
+    Headset = 'headset'
+}
+
 export interface Asset {
     _id: string;
     assetId: string;
-    type: 'laptop' | 'monitor' | 'cpu' | 'mouse' | 'hardDrive' | 'vehicle' | 'furniture' | 'software';
+    assetType: AssetType;
     model: string;
     manufacturer: string;
     serialNumber: string;

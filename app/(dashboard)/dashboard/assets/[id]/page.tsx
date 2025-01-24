@@ -130,8 +130,6 @@ export default function AssetDetailPage() {
     (role) => role === "sysAdmin" || role === "administrator"
   );
 
-  console.log(asset.vehicleDetails?.licensePlateNumber);
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -186,7 +184,7 @@ export default function AssetDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Type:</span>
-                  <span className="capitalize">{asset.type}</span>
+                  <span className="capitalize">{asset.assetType}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium">Model:</span>
