@@ -38,7 +38,10 @@ const assetSchema = z
     assetType: z.enum([
       "laptop",
       "monitor",
+      "phone",
       "cpu",
+      "tablet",
+      "printer",
       "mouse",
       "hardDrive",
       "vehicle",
@@ -177,6 +180,8 @@ export function AddAssetDialog({ open, onOpenChange }: AddAssetDialogProps) {
                       <SelectContent>
                         <SelectItem value="laptop">Laptop</SelectItem>
                         <SelectItem value="monitor">Monitor</SelectItem>
+                        <SelectItem value="tablet">Tablet</SelectItem>
+                        <SelectItem value="phone">Phone</SelectItem>
                         <SelectItem value="cpu">CPU</SelectItem>
                         <SelectItem value="mouse">Mouse</SelectItem>
                         <SelectItem value="hardDrive">Hard Drive</SelectItem>
