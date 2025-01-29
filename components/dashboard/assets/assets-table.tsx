@@ -93,7 +93,7 @@ export function AssetsTable({ assets }: AssetsTableProps) {
             >
               <TableCell className="font-medium">{asset.assetId}</TableCell>
               <TableCell>{asset.model}</TableCell>
-              <TableCell>{getAssetIcon(asset.assetType)}</TableCell>
+              <TableCell>{getAssetIcon(asset.assetType || "")}</TableCell>
               <TableCell>{asset.location}</TableCell>
               <TableCell>{asset.department}</TableCell>
               <TableCell>

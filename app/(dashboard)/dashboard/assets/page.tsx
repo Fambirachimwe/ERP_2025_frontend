@@ -32,7 +32,7 @@ export default function AssetsPage() {
   const itAssets =
     assets?.filter((asset) =>
       ["laptop", "monitor", "cpu", "mouse", "hardDrive"].includes(
-        asset.assetType
+        asset.assetType as string
       )
     ) || [];
 
@@ -41,6 +41,9 @@ export default function AssetsPage() {
 
   const furnitureAssets =
     assets?.filter((asset) => asset.assetType === "furniture") || [];
+
+  const vehicleAssets =
+    assets?.filter((asset) => asset.assetType === "vehicle") || [];
 
   const otherAssets =
     assets?.filter(
@@ -53,7 +56,8 @@ export default function AssetsPage() {
           "hardDrive",
           "software",
           "furniture",
-        ].includes(asset.assetType)
+          "vehicle",
+        ].includes(asset.assetType as string)
     ) || [];
 
   return (
@@ -101,6 +105,7 @@ export default function AssetsPage() {
           <TabsTrigger value="it">IT Equipment</TabsTrigger>
           <TabsTrigger value="software">Software</TabsTrigger>
           <TabsTrigger value="furniture">Furniture</TabsTrigger>
+          <TabsTrigger value="vehicle">Vehicles</TabsTrigger>
           <TabsTrigger value="other">Other</TabsTrigger>
         </TabsList>
 
@@ -149,6 +154,18 @@ export default function AssetsPage() {
             </div>
           ) : (
             <AssetsTable assets={furnitureAssets} />
+          )}
+        </TabsContent>
+
+        <TabsContent value="vehicle" className="space-y-4">
+          {view === "grid" ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {vehicleAssets.map((asset) => (
+                <AssetCard key={asset._id} asset={asset} />
+              ))}
+            </div>
+          ) : (
+            <AssetsTable assets={vehicleAssets} />
           )}
         </TabsContent>
 

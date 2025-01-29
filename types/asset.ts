@@ -23,7 +23,8 @@ export enum AssetType {
 export interface Asset {
     _id: string;
     assetId: string;
-    assetType: AssetType;
+    type: string;
+    assetType?: string;
     model: string;
     manufacturer: string;
     serialNumber: string;
