@@ -31,14 +31,16 @@ export default function AssetsPage() {
 
   const itAssets =
     assets?.filter((asset) =>
-      ["laptop", "monitor", "cpu", "mouse", "hardDrive"].includes(asset.type)
+      ["laptop", "monitor", "cpu", "mouse", "hardDrive"].includes(
+        asset.assetType
+      )
     ) || [];
 
   const softwareAssets =
-    assets?.filter((asset) => asset.type === "software") || [];
+    assets?.filter((asset) => asset.assetType === "software") || [];
 
   const furnitureAssets =
-    assets?.filter((asset) => asset.type === "furniture") || [];
+    assets?.filter((asset) => asset.assetType === "furniture") || [];
 
   const otherAssets =
     assets?.filter(
@@ -51,7 +53,7 @@ export default function AssetsPage() {
           "hardDrive",
           "software",
           "furniture",
-        ].includes(asset.type)
+        ].includes(asset.assetType)
     ) || [];
 
   return (

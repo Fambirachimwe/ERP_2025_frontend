@@ -23,6 +23,8 @@ import {
   AppWindow,
   Printer,
   FileText,
+  Phone,
+  Tablet,
 } from "lucide-react";
 
 interface AssetsTableProps {
@@ -40,6 +42,8 @@ const assetTypeIcons: Record<string, React.ElementType> = {
   software: AppWindow,
   printer: Printer,
   other: FileText,
+  phone: Phone,
+  tablet: Tablet,
 };
 
 export function AssetsTable({ assets }: AssetsTableProps) {
