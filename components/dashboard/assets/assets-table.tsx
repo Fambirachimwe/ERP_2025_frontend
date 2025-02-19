@@ -94,77 +94,75 @@ export function AssetsTable({ assets }: AssetsTableProps) {
         />
       </div>
 
-      {/* Table with fixed header and scrollable body */}
+      {/* Table */}
       <div className="rounded-md border">
-        <div className="relative">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
-              <TableRow>
-                <TableHead>Asset ID</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Warranty</TableHead>
-                <TableHead>Assigned To</TableHead>
-              </TableRow>
-            </TableHeader>
-          </Table>
-          <div className="overflow-auto max-h-[600px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <Table>
-              <TableBody>
-                {filteredAssets.map((asset) => (
-                  <TableRow
-                    key={asset._id}
-                    className="cursor-pointer hover:bg-accent/50 transition-colors"
-                    onClick={() =>
-                      router.push(`/dashboard/assets/${asset._id}`)
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Asset ID</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Location</TableHead>
+              <TableHead>Department</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Warranty</TableHead>
+              <TableHead>Assigned To</TableHead>
+              {/* <TableHead>Additional Details</TableHead> */}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAssets.map((asset) => (
+              <TableRow
+                key={asset._id}
+                className="cursor-pointer hover:bg-accent/50 transition-colors"
+                onClick={() => router.push(`/dashboard/assets/${asset._id}`)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    router.push(`/dashboard/assets/${asset._id}`);
+                  }
+                }}
+              >
+                <TableCell className="font-medium">{asset.assetId}</TableCell>
+                <TableCell>{asset.model}</TableCell>
+                <TableCell>{getAssetIcon(asset.assetType || "")}</TableCell>
+                <TableCell>{asset.location}</TableCell>
+                <TableCell>{asset.department}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      asset.status === "available" ? "default" : "destructive"
                     }
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        router.push(`/dashboard/assets/${asset._id}`);
-                      }
-                    }}
                   >
-                    <TableCell className="font-medium">
-                      {asset.assetId}
-                    </TableCell>
-                    <TableCell>{asset.model}</TableCell>
-                    <TableCell>{getAssetIcon(asset.assetType || "")}</TableCell>
-                    <TableCell>{asset.location}</TableCell>
-                    <TableCell>{asset.department}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          asset.status === "available"
-                            ? "default"
-                            : "destructive"
-                        }
-                      >
-                        {asset.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {asset.warrantyExpiry
-                        ? formatDistanceToNow(new Date(asset.warrantyExpiry), {
-                            addSuffix: true,
-                          })
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {asset.assignedTo
-                        ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
-                        : "Unassigned"}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+                    {asset.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {asset.warrantyExpiry
+                    ? formatDistanceToNow(new Date(asset.warrantyExpiry), {
+                        addSuffix: true,
+                      })
+                    : "N/A"}
+                </TableCell>
+                <TableCell>
+                  {asset.assignedTo
+                    ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
+                    : "Unassigned"}
+                </TableCell>
+                {/* <TableCell>
+                  {asset.type === "vehicle" && asset.vehicleDetails && (
+                    <span className="text-sm">
+                      LP: {asset.vehicleDetails.licensePlate}
+                      <br />
+                      CN: {asset.vehicleDetails.chassisNumber}
+                    </span>
+                  )}
+                </TableCell> */}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
