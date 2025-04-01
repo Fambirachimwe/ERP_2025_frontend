@@ -11,19 +11,23 @@ import { CalendarClock } from "lucide-react";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
+import { ScheduleServiceDialog } from "@/components/dashboard/service-log/schedule-service-dialog";
 
 export default function ServiceLogPage() {
   const { data: session } = useSession();
   const [currentTab, setCurrentTab] = useState<"all" | "due" | "upcoming">(
     "all"
   );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: assets, isLoading } = useQuery({
     queryKey: ["assets-service"],
     queryFn: () => apiClient("/assets/service-schedule", session),
   });
 
-  console.log("assets", assets);
+  const handleOpenDialog = () => {
+    setIsDialogOpen(true);
+  };
 
   return (
     <DashboardShell>
@@ -31,7 +35,7 @@ export default function ServiceLogPage() {
         heading="Service Log"
         description="Track and manage asset maintenance schedules"
       >
-        <Button>
+        <Button onClick={handleOpenDialog}>
           <CalendarClock className="mr-2 h-4 w-4" />
           Schedule Service
         </Button>
@@ -63,6 +67,11 @@ export default function ServiceLogPage() {
           />
         </TabsContent>
       </Tabs>
+
+      <ScheduleServiceDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+      />
     </DashboardShell>
   );
 }
