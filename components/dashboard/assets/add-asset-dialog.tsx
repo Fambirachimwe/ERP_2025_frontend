@@ -47,6 +47,7 @@ const assetSchema = z
       "vehicle",
       "furniture",
       "software",
+      "other",
     ]),
     model: z.string().min(1, "Model is required"),
     manufacturer: z.string().min(1, "Manufacturer is required"),
