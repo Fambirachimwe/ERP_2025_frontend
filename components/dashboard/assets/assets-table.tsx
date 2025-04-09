@@ -105,7 +105,7 @@ export function AssetsTable({ assets }: AssetsTableProps) {
               <TableHead>Location</TableHead>
               <TableHead>Department</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Warranty</TableHead>
+              {/* <TableHead>Warranty</TableHead> */}
               <TableHead>Assigned To</TableHead>
               {/* <TableHead>Additional Details</TableHead> */}
             </TableRow>
@@ -138,13 +138,13 @@ export function AssetsTable({ assets }: AssetsTableProps) {
                     {asset.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   {asset.warrantyExpiry
                     ? formatDistanceToNow(new Date(asset.warrantyExpiry), {
                         addSuffix: true,
                       })
                     : "N/A"}
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   {asset.assignedTo
                     ? `${asset.assignedTo.firstName} ${asset.assignedTo.lastName}`
